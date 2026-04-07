@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Flask Application Service
+  app:
+    build: .
+    container_name: aquatic_pandas_app
+    ports:
+      - "3000:3000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - DB_HOST=db
+      - DB_USER=pandas_user
+      - DB_PASSWORD=pandas_password
+      - DB_NAME=aquatic_pandas
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    networks:
+      - aquatic_network
+
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: aquatic_pandas_db
+    environment:
+      - MYSQL_USER=pandas_user
+      - MYSQL_PASSWORD=pandas_password
+      - MYSQL_DATABASE=aquatic_pandas
+      - MYSQL_ROOT_PASSWORD=root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - aquatic_network
+
+volumes:
+  mysql_data:
+
+networks:
+  aquatic_network:
+    driver: bridge
