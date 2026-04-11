@@ -10,49 +10,14 @@ Models are mapped to the database tables defined in init.sql.
 
 from app import db
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # ==============================================================================
 # USER MODEL
 # ==============================================================================
 
 class User(db.Model):
-    """
-    PSEUDOCODE:
-        TABLE: User
-        PRIMARY KEY: user_id
-        
-        ATTRIBUTES:
-            user_id: Integer (auto-increment)
-            first_name: String (max 100)
-            last_name: String (max 100)
-            email: String (unique, max 255)
-            phone: String (nullable, max 20)
-            address: String (nullable, max 255)
-            created_at: DateTime (auto-generated)
-            updated_at: DateTime (auto-updated)
-        
-        RELATIONSHIPS:
-            accounts: One-to-Many with Account
-            categories: One-to-Many with Category
-        
-        METHODS:
-            to_dict() -> dict
-                RETURN serialized user data as dictionary
-            
-            get_total_budget() -> float
-                QUERY all categories for this user
-                CALCULATE sum of all budget values
-                RETURN total
-            
-            get_accounts() -> list
-                RETURN all accounts associated with user
-            
-            add_category(name, budget) -> Category
-                VALIDATE name doesn't exist
-                CREATE Category object
-                ADD to database
-                RETURN new category
-    """
+    """User account model with authentication and profile relationships."""
     __tablename__ = 'User'
     
     # Attributes
@@ -60,6 +25,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20))
     address = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -69,17 +35,42 @@ class User(db.Model):
     accounts = db.relationship('Account', back_populates='user', cascade='all, delete-orphan')
     categories = db.relationship('Category', back_populates='user', cascade='all, delete-orphan')
     
+    def set_password(self, password):
+        """Hash and set user password"""
+        # Enforce a minimal password length before hashing.
+        if not password or len(password) < 6:
+            raise ValueError("Password must be at least 6 characters long")
+        # Store only the hash, never the plaintext password.
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        """Verify password against stored hash"""
+        # Compare candidate password against the persisted hash.
+        return check_password_hash(self.password_hash, password)
+    
     def to_dict(self):
-        """STUB: Return serialized user data"""
-        pass
+        """Return serialized user data (excludes password_hash)"""
+        # API-safe representation of a user record.
+        return {
+            'user_id': self.user_id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email,
+            'phone': self.phone,
+            'address': self.address,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
     
     def get_total_budget(self):
-        """STUB: Calculate total budget across all categories"""
-        pass
+        """Calculate total budget across all categories"""
+        # Aggregate current budget values from related categories.
+        return sum(category.budget for category in self.categories)
     
     def get_accounts(self):
-        """STUB: Return all user accounts"""
-        pass
+        """Return all user accounts"""
+        # Relationship-backed list of linked accounts.
+        return self.accounts
 
 
 # ==============================================================================
@@ -87,28 +78,7 @@ class User(db.Model):
 # ==============================================================================
 
 class Institution(db.Model):
-    """
-    PSEUDOCODE:
-        TABLE: Institution
-        PRIMARY KEY: institution_id
-        
-        ATTRIBUTES:
-            institution_id: Integer (auto-increment)
-            institution_name: String (unique, max 255)
-            website: String (nullable, max 255)
-            created_at: DateTime
-            updated_at: DateTime
-        
-        RELATIONSHIPS:
-            accounts: One-to-Many with Account
-        
-        METHODS:
-            to_dict() -> dict
-                RETURN serialized institution data
-            
-            get_accounts() -> list
-                RETURN all accounts at this institution
-    """
+    """Financial institution model linked to user accounts."""
     __tablename__ = 'Institution'
     
     # Attributes
@@ -122,8 +92,20 @@ class Institution(db.Model):
     accounts = db.relationship('Account', back_populates='institution')
     
     def to_dict(self):
-        """STUB: Return serialized institution data"""
-        pass
+        """Return serialized institution data"""
+        # Normalize Institution object to JSON-friendly data.
+        return {
+            'institution_id': self.institution_id,
+            'institution_name': self.institution_name,
+            'website': self.website,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def get_accounts(self):
+        """Return all accounts at this institution"""
+        # Return accounts linked through foreign key relationship.
+        return self.accounts
 
 
 # ==============================================================================
@@ -131,45 +113,7 @@ class Institution(db.Model):
 # ==============================================================================
 
 class Account(db.Model):
-    """
-    PSEUDOCODE:
-        TABLE: Account
-        PRIMARY KEY: account_id
-        FOREIGN KEYS: user_id (User), institution_id (Institution)
-        
-        ATTRIBUTES:
-            account_id: Integer (auto-increment)
-            account_name: String (max 255)
-            account_type: String (max 50)
-            user_id: Integer (foreign key)
-            institution_id: Integer (foreign key)
-            created_at: DateTime
-            updated_at: DateTime
-        
-        RELATIONSHIPS:
-            user: Many-to-One with User
-            institution: Many-to-One with Institution
-            transactions: One-to-Many with Transaction
-        
-        METHODS:
-            to_dict() -> dict
-                RETURN serialized account data
-            
-            get_balance() -> float
-                QUERY all transactions for account
-                CALCULATE: sum(inflows) - sum(outflows)
-                RETURN balance
-            
-            get_transactions(start_date, end_date) -> list
-                FILTER transactions by date range
-                RETURN filtered transactions
-            
-            add_transaction(date, amount, type, payee, category, memo)
-                VALIDATE amount > 0
-                CREATE Transaction object
-                ADD to database
-                RETURN new transaction
-    """
+    """Bank account model with balance and transaction helpers."""
     __tablename__ = 'Account'
     
     # Attributes
@@ -187,16 +131,37 @@ class Account(db.Model):
     transactions = db.relationship('Transaction', back_populates='account', cascade='all, delete-orphan')
     
     def to_dict(self):
-        """STUB: Return serialized account data"""
-        pass
+        """Return serialized account data"""
+        # Include computed balance for frontend/API consumers.
+        return {
+            'account_id': self.account_id,
+            'account_name': self.account_name,
+            'account_type': self.account_type,
+            'user_id': self.user_id,
+            'institution_id': self.institution_id,
+            'balance': float(self.get_balance()),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
     
     def get_balance(self):
-        """STUB: Calculate account balance"""
-        pass
+        """Calculate account balance (sum of inflows - sum of outflows)"""
+        # Sum incoming funds and subtract outgoing funds.
+        total_inflow = sum(float(t.inflow) for t in self.transactions)
+        total_outflow = sum(float(t.outflow) for t in self.transactions)
+        return total_inflow - total_outflow
     
     def get_transactions(self, start_date=None, end_date=None):
-        """STUB: Get transactions within date range"""
-        pass
+        """Get transactions within date range"""
+        # Start from all transactions for this account.
+        query = Transaction.query.filter_by(account_id=self.account_id)
+        # Optionally apply a lower date bound.
+        if start_date:
+            query = query.filter(Transaction.date >= start_date)
+        # Optionally apply an upper date bound.
+        if end_date:
+            query = query.filter(Transaction.date <= end_date)
+        return query.all()
 
 
 # ==============================================================================
@@ -204,45 +169,7 @@ class Account(db.Model):
 # ==============================================================================
 
 class Category(db.Model):
-    """
-    PSEUDOCODE:
-        TABLE: Category
-        PRIMARY KEY: category_id
-        FOREIGN KEY: user_id (User)
-        UNIQUE CONSTRAINT: (category_name, user_id)
-        
-        ATTRIBUTES:
-            category_id: Integer (auto-increment)
-            category_name: String (max 255)
-            budget: Decimal (2 decimal places)
-            user_id: Integer (foreign key)
-            created_at: DateTime
-            updated_at: DateTime
-        
-        RELATIONSHIPS:
-            user: Many-to-One with User
-            transactions: One-to-Many with Transaction
-        
-        METHODS:
-            to_dict() -> dict
-                RETURN serialized category data
-            
-            get_spent_amount() -> float
-                QUERY all transactions in category
-                CALCULATE: sum(all outflows)
-                RETURN total spent
-            
-            get_remaining_budget() -> float
-                CALCULATE: budget - get_spent_amount()
-                RETURN remaining
-            
-            is_over_budget() -> bool
-                CHECK: get_spent_amount() > budget
-                RETURN boolean
-            
-            get_transactions() -> list
-                RETURN all transactions in this category
-    """
+    """Budget category model with spending and remaining-budget helpers."""
     __tablename__ = 'Category'
     
     # Attributes
@@ -261,20 +188,34 @@ class Category(db.Model):
     transactions = db.relationship('Transaction', back_populates='category', cascade='all, delete-orphan')
     
     def to_dict(self):
-        """STUB: Return serialized category data"""
-        pass
+        """Return serialized category data"""
+        # Include computed spending metrics for budget views.
+        return {
+            'category_id': self.category_id,
+            'category_name': self.category_name,
+            'budget': float(self.budget),
+            'spent_amount': float(self.get_spent_amount()),
+            'remaining_budget': float(self.get_remaining_budget()),
+            'is_over_budget': self.is_over_budget(),
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
     
     def get_spent_amount(self):
-        """STUB: Calculate total spent in category"""
-        pass
+        """Calculate total spent in category"""
+        # Expenses are tracked in the outflow field.
+        return sum(float(t.outflow) for t in self.transactions)
     
     def get_remaining_budget(self):
-        """STUB: Calculate remaining budget"""
-        pass
+        """Calculate remaining budget"""
+        # Remaining = configured budget - current spending.
+        return float(self.budget) - self.get_spent_amount()
     
     def is_over_budget(self):
-        """STUB: Check if category is over budget"""
-        pass
+        """Check if category is over budget"""
+        # True when spending exceeds allocated budget.
+        return self.get_spent_amount() > float(self.budget)
 
 
 # ==============================================================================
@@ -282,45 +223,7 @@ class Category(db.Model):
 # ==============================================================================
 
 class Transaction(db.Model):
-    """
-    PSEUDOCODE:
-        TABLE: Transaction
-        PRIMARY KEY: transaction_id
-        FOREIGN KEYS: category_id (Category), account_id (Account)
-        
-        ATTRIBUTES:
-            transaction_id: Integer (auto-increment)
-            memo: String (nullable, max 255)
-            date: Date (not nullable)
-            outflow: Decimal (expense amount)
-            payee: String (nullable, max 255)
-            inflow: Decimal (income amount)
-            category_id: Integer (foreign key, nullable)
-            account_id: Integer (foreign key)
-            created_at: DateTime
-            updated_at: DateTime
-        
-        RELATIONSHIPS:
-            category: Many-to-One with Category
-            account: Many-to-One with Account
-        
-        METHODS:
-            to_dict() -> dict
-                RETURN serialized transaction data
-            
-            get_amount() -> float
-                IF outflow > 0 RETURN outflow
-                ELSE RETURN inflow
-            
-            get_type() -> string
-                IF outflow > 0 RETURN "Expense"
-                ELSE RETURN "Income"
-            
-            update_transaction(date, payee, amount, category, memo)
-                VALIDATE new data
-                UPDATE attributes
-                SAVE to database
-    """
+    """Transaction model for inflow/outflow records on an account."""
     __tablename__ = 'Transaction'
     
     # Attributes
@@ -340,13 +243,29 @@ class Transaction(db.Model):
     account = db.relationship('Account', back_populates='transactions')
     
     def to_dict(self):
-        """STUB: Return serialized transaction data"""
-        pass
+        """Return serialized transaction data"""
+        # Standard serialized shape used by API responses.
+        return {
+            'transaction_id': self.transaction_id,
+            'memo': self.memo,
+            'date': self.date.isoformat() if self.date else None,
+            'outflow': float(self.outflow),
+            'payee': self.payee,
+            'inflow': float(self.inflow),
+            'category_id': self.category_id,
+            'account_id': self.account_id,
+            'amount': float(self.get_amount()),
+            'type': self.get_type(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
     
     def get_amount(self):
-        """STUB: Get transaction amount"""
-        pass
+        """Get transaction amount (absolute value)"""
+        # Use outflow for expense rows, otherwise use inflow.
+        return float(self.outflow) if float(self.outflow) > 0 else float(self.inflow)
     
     def get_type(self):
-        """STUB: Get transaction type (income/expense)"""
-        pass
+        """Get transaction type (income/expense)"""
+        # Classify transaction based on which monetary field is populated.
+        return "Expense" if float(self.outflow) > 0 else "Income"
