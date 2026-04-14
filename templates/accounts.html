@@ -1,3 +1,40 @@
 <html>
-    
+    <head>
+        <title>Accounts Page</title>
+    </head>
+    <body>
+        <h1>Bank Accounts</h1>
+        
+        <table>
+
+            <thead>
+                <th>Account Name</th>
+                <th>Type</th>
+                <th>Institution</th>
+                <th>Website</th>
+                <th>Actions</th>
+            </thead>
+
+            <tbody>
+                {% for account in accounts %}
+                <tr>
+                    <td>{{ account.name }}</td>
+                    <td>{{ account.type }}</td>
+                    <td>{{ account.institution }}</td>
+                    <td><a href="{{ account.website }}">{{ account.website }}</a></td>
+                    <td>
+                        <a href="/accounts/{{ account.id }}/edit">Edit</a> |
+                        <a href="/accounts/{{ account.id }}/delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+        <div>
+            <button onclick="window.location.href='/accounts/create'">Add Account</button>
+        </div>
+
+    </body>
 </html>

@@ -1,3 +1,41 @@
 <html>
+    <head>
+        <title>Budget Page</title>
+    </head>
+    <body>
+        <h1>Budget</h1>
+
+        <!-- Selection for the month -->
+
+        <table>
+            <thead>
+                <th>Category</th>
+                <th>Budgeted Amount</th>
+                <th>Amount Spent</th>
+                <th>Amount Remaining</th>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.budgeted_amount }}</td>
+                    <td>{{ category.amount_spent }}</td>
+                    <td>{{ category.amount_remaining }}</td>
+                </tr>
+                {% endfor %}
+        </table>
+
+        <button onclick="window.location.href='/category/create'">Add Category</button>
+
+        <table>
+            <tr>
+                <td><strong>Total</strong></td>
+                <td>{{ total_budgeted }}</td>
+                <td>{{ total_spent }}</td>
+                <td>{{ total_remaining }}</td>
+            </tr>
+        </table>
+
+    </body>
     
 </html>

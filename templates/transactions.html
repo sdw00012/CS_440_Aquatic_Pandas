@@ -1,3 +1,41 @@
 <html>
+    <head>
+        <title>Transactions Page</title>
+    </head>
+    <body>
+        <h1>Transactions</h1>
+
+        <button onclick="window.location.href='/transactions/create'">Add Transaction</button>
+
+        <table>
+            <thead>
+                <th>Date</th>
+                <th>Account</th>
+                <th>Payee</th>
+                <th>Category</th>
+                <th>Memo</th>
+                <th>Inflow</th>
+                <th>Outflow</th>
+                <th>Actions</th>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.date }}</td>
+                    <td>{{ transaction.account }}</td>
+                    <td>{{ transaction.payee }}</td>
+                    <td>{{ transaction.category }}</td>
+                    <td>{{ transaction.memo }}</td>
+                    <td>{{ transaction.inflow }}</td>
+                    <td>{{ transaction.outflow }}</td>
+                    <td>
+                        <a href="/transactions/{{ transaction.id }}/edit">Edit</a> |
+                        <a href="/transactions/{{ transaction.id }}/delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
     
 </html>
