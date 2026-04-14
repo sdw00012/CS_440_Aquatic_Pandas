@@ -41,6 +41,7 @@ env/
 *.swo
 *~
 .DS_Store
+*selected
 
 # Docker
 docker-compose.override.yml
