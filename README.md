@@ -129,32 +129,35 @@ The following routes are intentionally documented for future work and are **not 
 
 Template files exist and are expected to be wired later to view routes (for example, pages related to login, profile, accounts, budgets, and transactions).
 
-## Run With Docker (Recommended)
 
-1. From project root, build and start services:
+## Run the App
+
+### Run With Docker (Recommended)
+
+1. Copy and Setup Environment
 
 ```bash
-docker-compose up --build
+cp .env-example .env
 ```
 
-2. Access services:
+2. Start Services
+
+```bash
+docker compose down --remove-orphans
+```
+
+3. Access Services
 
 - App: `http://localhost:5000`
 - MySQL: `localhost:3306`
 
-3. Stop services:
+4. Stop services:
 
 ```bash
-docker-compose down
+docker compose down --remove-orphans
 ```
 
-Default Docker database settings from `docker-compose.yml`:
-
-- Database: `aquatic_pandas`
-- User: `pandas_user`
-- Password: `pandas_password`
-
-## Run Locally (Without Docker)
+### Run Locally (Without Docker, and NOT RECOMMENDED)
 
 1. Create and activate a virtual environment.
 2. Install dependencies:
