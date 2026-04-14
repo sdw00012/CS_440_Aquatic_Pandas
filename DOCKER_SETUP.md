@@ -10,7 +10,7 @@
 
 ```bash
 # Navigate to project directory
-cd /Users/sweese04/github/CS_440_Aquatic_Pandas
+cd /...../CS_440_Aquatic_Pandas
 
 # Start everything (builds image + starts containers + initializes DB)
 docker-compose up
