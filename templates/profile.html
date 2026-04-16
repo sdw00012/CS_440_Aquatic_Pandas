@@ -1,3 +1,42 @@
-<html>
-    
-</html>
+{% extends "base.html" %}
+{% block title %}Profile Page{% endblock %}
+{% block content %}
+    <h1>Profile</h1>
+
+    <div class="boarder col-md-10 mx-auto">
+        <form action="/profile" method="post">
+            
+            <div class="form-group row m-4">
+                <label>First Name:</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}">
+            </div>
+
+            <div class="form-group row m-4">
+                <label>Last Name:</label>
+                <input type="text" name="last_name" value="{{ user.last_name }}">
+            </div>
+
+            <div class="form-group row m-4">
+                <label>Email:</label>
+                <input type="email" name="email" value="{{ user.email }}">
+            </div>
+
+            <div class="form-group row m-4">
+                <label>Phone Number:</label>
+                <input type="text" name="phone_number" value="{{ user.phone_number }}">
+            </div>
+
+            <div class="form-group row m-4">
+                <label>Address:</label>
+                <input type="text" name="address" value="{{ user.address }}">
+            </div>
+
+
+            <div class="form-group row m-4">
+                <input type="submit" value="Update Profile" class="form-control btn btn-outline-primary">
+            </div>
+
+        </form>
+    </div>
+
+{% endblock %}

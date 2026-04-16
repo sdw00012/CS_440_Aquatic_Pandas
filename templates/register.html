@@ -1,13 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Login Page{% endblock %}
+{% block title %}Register Page{% endblock %}
 {% block content %}
-    <h1>Login to your account</h1>
-    <form action ="/login" method="post">
+    <h1>Register Page</h1>
+    <p>Register your account here</p>
+    <form action="/register" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br><br>
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" value="Login">
+        <input type="submit" value="Register">
     </form>
-    <button onclick="window.location.href='/register'">Register</button>
+        <button onclick="window.location.href='/login'">Login</button>
 {% endblock %}
