@@ -148,7 +148,7 @@ docker compose down --remove-orphans
 
 3. Access Services
 
-- App: `http://localhost:5000`
+- App: `http://localhost:3000`
 - MySQL: `localhost:3306`
 
 4. Stop services:
@@ -187,7 +187,7 @@ python app.py
 The app reads:
 
 - `FLASK_HOST` (default: `0.0.0.0`)
-- `FLASK_PORT` (default: `5000`)
+- `FLASK_PORT` (default: `3000`)
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 - `SECRET_KEY`
 

@@ -22,19 +22,19 @@ docker-compose up -d
 ### 2. **Access the Application**
 
 Once the containers are running, your app is available at:
-- **Web Server**: http://localhost:5000
+- **Web Server**: http://localhost:3000
 - **MySQL Database**: localhost:3306
 
 ### 3. **Test the Backend**
 
 ```bash
 # Test Login Endpoint
-curl -X POST http://localhost:5000/auth/login \
+curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "password123"}'
 
 # Test Register Endpoint
-curl -X POST http://localhost:5000/auth/register \
+curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "John",
@@ -91,7 +91,7 @@ docker-compose exec app bash
 
 ### App Service (Flask)
 - **Container Name**: aquatic_pandas_app
-- **Port**: 5000 (localhost:5000)
+- **Port**: 3000 (localhost:3000)
 - **Environment**: Development mode with hot reload
 - **Volume**: Current directory mounted for live code changes
 
@@ -108,7 +108,7 @@ docker-compose exec app bash
 The Docker setup uses these variables (from `docker-compose.yml`):
 - `FLASK_ENV`: development
 - `FLASK_HOST`: 0.0.0.0
-- `FLASK_PORT`: 5000
+- `FLASK_PORT`: 3000
 - `DB_HOST`: db (container name)
 - `DB_PORT`: 3306
 - `DB_USER`: pandas_user
@@ -119,7 +119,7 @@ To override these, create a `.env` file in the project root:
 ```
 FLASK_ENV=development
 FLASK_HOST=0.0.0.0
-FLASK_PORT=5000
+FLASK_PORT=3000
 SECRET_KEY=your-secret-key
 DB_HOST=db
 DB_PORT=3306
@@ -139,14 +139,14 @@ When the `db` service starts:
 ## Troubleshooting
 
 ### "Address already in use"
-Another service is using port 5000 or 3306:
+Another service is using port 3000 or 3306:
 ```bash
-# Find and kill process on port 5000
-lsof -i :5000
+# Find and kill process on port 3000
+lsof -i :3000
 kill -9 <PID>
 
 # Or use different ports in docker-compose.yml
-# Change "5000:5000" to "5001:5000" etc
+# Change "3000:3000" to "3001:3000" etc
 ```
 
 ### "Cannot connect to database"

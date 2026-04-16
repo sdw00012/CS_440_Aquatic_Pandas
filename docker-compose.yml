@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   # Flask Application Service
   app:
     build: .
     container_name: aquatic_pandas_app
     ports:
-      - "5000:5000"
+      - "3000:3000"
     environment:
       - FLASK_ENV=development
       - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=5000
+      - FLASK_PORT=3000
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=pandas_user

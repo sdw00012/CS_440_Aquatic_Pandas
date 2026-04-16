@@ -15,7 +15,7 @@ Routes are organized by resource type:
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from app import db
+from extensions import db
 from models import User, Account, Institution, Category, Transaction
 from datetime import datetime
 import re
