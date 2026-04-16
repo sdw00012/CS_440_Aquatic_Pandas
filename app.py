@@ -9,20 +9,13 @@ and registers all routes.
 """
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 from dotenv import load_dotenv
 import os
+from extensions import db, login_manager
 
 # Load environment variables
 # Reads values from a local .env file when present.
 load_dotenv()
-
-# Initialize SQLAlchemy ORM
-db = SQLAlchemy()
-
-# Initialize LoginManager
-login_manager = LoginManager()
 
 def create_app():
     """Create and configure the Flask application instance."""
@@ -89,7 +82,7 @@ if __name__ == '__main__':
     
     # Host/port are configurable so local and Docker runs share the same entrypoint.
     HOST = os.getenv('FLASK_HOST', '0.0.0.0')
-    PORT = int(os.getenv('FLASK_PORT', 5000))
+    PORT = int(os.getenv('FLASK_PORT', 3000))
     DEBUG = os.getenv('FLASK_ENV', 'development') == 'development'
     
     print("Starting Aquatic Pandas application...")

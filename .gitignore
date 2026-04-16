@@ -41,6 +41,7 @@ env/
 *.swo
 *~
 .DS_Store
+*selected
 
 # Docker
 docker-compose.override.yml
@@ -49,6 +50,8 @@ docker-compose.override.yml
 # Logs
 *.log
 logs/
+Testing_Results
+cookies.txt
 
 # Database
 *.sql

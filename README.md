@@ -1,295 +1,211 @@
-# Aquatic Pandas - Budget Management System
-## CS440 Project
+# Aquatic Pandas Budget Management System
 
-A comprehensive budget management system built with Python, Flask, and MySQL. The application allows users to track accounts, manage budgets across categories, and monitor transactions.
+Aquatic Pandas is a Flask + MySQL budget tracking backend with user authentication, account management, category budgeting, and transaction tracking.
 
----
+## Current Status
 
-## Project Overview
+- Backend API is implemented and runs from `app.py`.
+- Authentication uses Flask-Login session cookies (not token-based auth).
+- CRUD endpoints exist for users, accounts, categories, and transactions.
+- MySQL schema is defined in `init.sql` and mirrored by SQLAlchemy models in `models.py`.
+- Docker setup is available for local development.
+- HTML templates exist in `templates/`, but they are not wired into Flask routes in the current code.
 
-**Aquatic Pandas** is a personal finance management application that helps users:
-- Manage multiple accounts across different financial institutions
-- Track income and expenses through transactions
-- Create and monitor budget categories
-- View spending patterns and budget summaries
-- Analyze financial data with detailed reporting
+## Tech Stack
 
-**Tech Stack:**
-- **Backend:** Python 3.11 + Flask 3.0
-- **Database:** MySQL 8.0
-- **ORM:** SQLAlchemy 2.0
-- **Docker:** Docker & Docker Compose for containerization
-- **Server Port:** 3000 (localhost)
-
----
+- Python 3.11
+- Flask 3.0
+- Flask-SQLAlchemy
+- SQLAlchemy 2.0
+- Flask-Login
+- MySQL 8.0
+- Docker / Docker Compose
 
 ## Project Structure
 
-```
+```text
 CS_440_Aquatic_Pandas/
-├── app.py                        # Flask application entry point
-├── models.py                     # SQLAlchemy ORM models
-├── routes.py                     # API endpoints/routes
-├── init.sql                      # Database schema initialization
-├── docker-compose.yml            # Docker Compose configuration
-├── Dockerfile                    # Flask app container definition
-├── requirements.txt              # Python dependencies
-├── .env.example                  # Environment variables template
-├── .gitignore                    # Git ignore rules
-├── APPLICATION_PSEUDOCODE.md     # Detailed pseudocode documentation
-└── README.md                     # This file
+├── app.py
+├── models.py
+├── routes.py
+├── init.sql
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+├── DOCKER_SETUP.md
+├── APPLICATION_PSEUDOCODE.md
+├── App_Mockup.md
+├── static/
+│   └── style.css
+└── templates/
+    ├── accounts.html
+    ├── buget.html
+    ├── login.html
+    ├── profile.html
+    ├── registrar.html
+    └── transactions.html
 ```
 
-### File Descriptions
+## Database Models
 
-| File | Purpose |
-|------|---------|
-| **app.py** | Flask application factory, initialization, and main entry point |
-| **models.py** | SQLAlchemy ORM model definitions (User, Account, Institution, Category, Transaction) |
-| **routes.py** | RESTful API endpoints organized by resource type |
-| **init.sql** | SQL script to initialize database schema and tables |
-| **docker-compose.yml** | Orchestrates Flask app and MySQL database containers |
-| **Dockerfile** | Builds Docker image for Flask application |
-| **requirements.txt** | Python package dependencies |
-| **APPLICATION_PSEUDOCODE.md** | Comprehensive pseudocode for database models and API routes |
+The ORM models in `models.py` map to the tables in `init.sql`:
 
----
+- `User`
+- `Institution`
+- `Account`
+- `Category`
+- `Transaction`
 
-## Database Schema
+Key relationship behavior:
 
-### Entities
+- Deleting a user cascades to accounts and categories.
+- Deleting an account cascades to transactions.
+- Deleting a category sets `Transaction.category_id` to `NULL`.
+- `Category` enforces uniqueness for `(category_name, user_id)`.
 
-**User**
-- Stores user account information
-- Primary Key: `user_id`
-- Relationships: Has many Accounts and Categories
+## API Routes
 
-**Institution**
-- Financial institutions/banks
-- Primary Key: `institution_id`
-- Relationships: Has many Accounts
+This section is split into two groups:
 
-**Account**
-- User's financial accounts (checking, savings, credit card, etc.)
-- Primary Key: `account_id`
-- Foreign Keys: `user_id`, `institution_id`
-- Relationships: Has many Transactions
+- Implemented now (matches the current Flask code in `routes.py`)
+- Planned for future implementation (kept here as project roadmap)
 
-**Category**
-- Budget categories for transaction classification
-- Primary Key: `category_id`
-- Foreign Key: `user_id`
-- Relationships: Has many Transactions
-- Unique Constraint: (category_name, user_id)
+All implemented routes currently return JSON.
 
-**Transaction**
-- Financial transactions (income/expenses)
-- Primary Key: `transaction_id`
-- Foreign Keys: `account_id`, `category_id`
-- Types: Inflow (income) or Outflow (expense)
+### Auth Routes (`/auth`)
 
----
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout` (login required)
+- `GET /auth/current-user` (login required)
 
-## Getting Started
+### User Routes (`/api`)
 
-### Prerequisites
-- Docker & Docker Compose installed
-- Git for version control
-- (Optional) Python 3.11+ for local development
+- `GET /api/users/<user_id>` (login required)
+- `PUT /api/users/<user_id>` (login required)
+- `DELETE /api/users/<user_id>` (login required)
 
-### Quick Start with Docker
+### Account Routes (`/api`)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd CS_440_Aquatic_Pandas
-   ```
+- `POST /api/users/<user_id>/accounts` (login required)
+- `GET /api/users/<user_id>/accounts` (login required)
+- `GET /api/accounts/<account_id>` (login required)
+- `PUT /api/accounts/<account_id>` (login required)
+- `DELETE /api/accounts/<account_id>` (login required)
 
-2. **Copy environment file**
-   ```bash
-   cp .env.example .env
-   ```
+### Category Routes (`/api`)
 
-3. **Start the application**
-   ```bash
-   docker-compose up --build
-   ```
+- `POST /api/users/<user_id>/categories` (login required)
+- `GET /api/users/<user_id>/categories` (login required)
+- `GET /api/categories/<category_id>` (login required)
+- `PUT /api/categories/<category_id>` (login required)
+- `DELETE /api/categories/<category_id>` (login required)
 
-4. **Access the application**
-   - Flask Server: http://localhost:3000
-   - MySQL Database: localhost:3306
-   - Default credentials:
-     - User: `pandas_user`
-     - Password: `pandas_password`
-     - Database: `aquatic_pandas`
+### Transaction Routes (`/api`)
 
-5. **Stop the application**
-   ```bash
-   docker-compose down
-   ```
+- `POST /api/accounts/<account_id>/transactions` (login required)
+- `GET /api/accounts/<account_id>/transactions` (login required)
+- `GET /api/transactions/<transaction_id>` (login required)
+- `PUT /api/transactions/<transaction_id>` (login required)
+- `DELETE /api/transactions/<transaction_id>` (login required)
 
-### Local Development (Without Docker)
+## Planned Routes (Future)
 
-1. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+The following routes are intentionally documented for future work and are **not implemented yet**.
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Institution Routes (`/api`)
 
-3. **Set up database**
-   - Install MySQL server locally
-   - Create database: `aquatic_pandas`
-   - Run: `mysql -u root < init.sql`
+- `POST /api/institutions`
+- `GET /api/institutions`
+- `GET /api/institutions/<institution_id>`
 
-4. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with local database credentials
-   ```
+### Analytics Routes (`/api`)
 
-5. **Run the application**
-   ```bash
-   flask run --host=0.0.0.0 --port=3000
-   ```
+- `GET /api/users/<user_id>/budget-summary`
+- `GET /api/accounts/<account_id>/balance-history`
 
----
+### Planned Frontend/View Routes
 
-## API Endpoints
+Template files exist and are expected to be wired later to view routes (for example, pages related to login, profile, accounts, budgets, and transactions).
 
-### User Management
-- `POST /api/users` - Create user
-- `GET /api/users/<user_id>` - Get user profile
-- `PUT /api/users/<user_id>` - Update user
-- `DELETE /api/users/<user_id>` - Delete user
 
-### Accounts
-- `POST /api/users/<user_id>/accounts` - Create account
-- `GET /api/users/<user_id>/accounts` - List user accounts
-- `GET /api/accounts/<account_id>` - Get account details
-- `PUT /api/accounts/<account_id>` - Update account
-- `DELETE /api/accounts/<account_id>` - Delete account
+## Run the App
 
-### Categories
-- `POST /api/users/<user_id>/categories` - Create category
-- `GET /api/users/<user_id>/categories` - List user categories
-- `PUT /api/categories/<category_id>` - Update category
-- `DELETE /api/categories/<category_id>` - Delete category
-- `GET /api/categories/<category_id>/transactions` - Get category transactions
+### Run With Docker (Recommended)
 
-### Transactions
-- `POST /api/accounts/<account_id>/transactions` - Create transaction
-- `GET /api/accounts/<account_id>/transactions` - List account transactions
-- `GET /api/transactions/<transaction_id>` - Get transaction details
-- `PUT /api/transactions/<transaction_id>` - Update transaction
-- `DELETE /api/transactions/<transaction_id>` - Delete transaction
+1. Copy and Setup Environment
 
-### Institutions
-- `POST /api/institutions` - Create institution
-- `GET /api/institutions` - List all institutions
-- `GET /api/institutions/<institution_id>` - Get institution details
-
-### Analytics
-- `GET /api/users/<user_id>/budget-summary` - Get budget overview
-- `GET /api/accounts/<account_id>/balance-history` - Get balance trend
-
----
-
-## Development Workflow
-
-### Database Management
 ```bash
-# View database (from container)
-docker exec -it aquatic_pandas_db mysql -u pandas_user -p aquatic_pandas
-
-# Apply schema changes
-docker exec -i aquatic_pandas_db mysql -u pandas_user -p aquatic_pandas < init.sql
+cp .env-example .env
 ```
 
-### Application Logs
+2. Start Services
+
 ```bash
-# View Flask app logs
+docker compose down --remove-orphans
+```
+
+3. Access Services
+
+- App: `http://localhost:3000`
+- MySQL: `localhost:3306`
+
+4. Stop services:
+
+```bash
+docker compose down --remove-orphans
+```
+
+### Run Locally (Without Docker, and NOT RECOMMENDED)
+
+1. Create and activate a virtual environment.
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Create MySQL database and run schema:
+
+```bash
+mysql -u <user> -p <database_name> < init.sql
+```
+
+4. Copy environment template and set local values:
+
+```bash
+cp .env.example .env
+```
+
+5. Start app:
+
+```bash
+python app.py
+```
+
+The app reads:
+
+- `FLASK_HOST` (default: `0.0.0.0`)
+- `FLASK_PORT` (default: `3000`)
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- `SECRET_KEY`
+
+## Notes and Gaps
+
+- Existing templates and static assets are not connected to Flask view routes yet.
+- Planned routes in this README are explicitly marked and may not exist yet in `routes.py`.
+- There is no automated test suite in the repository at this time.
+
+## Useful Commands
+
+```bash
+# View app logs
 docker-compose logs -f app
 
-# View MySQL logs
+# View db logs
 docker-compose logs -f db
+
+# Open MySQL shell in container
+docker-compose exec db mysql -u pandas_user -p aquatic_pandas
 ```
-
-### Port Conflicts
-If port 3000 or 3306 are in use:
-1. Edit `docker-compose.yml`
-2. Change the port mappings
-3. Restart containers
-
----
-
-## Documentation Files
-
-- **APPLICATION_PSEUDOCODE.md** - Contains detailed pseudocode for:
-  - Complete API endpoint logic flow
-  - Database model structures and methods
-  - Business logic implementation guides
-  - Error handling strategies
-
----
-
-## Learning Resources
-
-### Project Structure
-The codebase is organized using:
-- **Factory Pattern** - Flask app initialization
-- **ORM Patterns** - SQLAlchemy models
-- **RESTful Architecture** - Stateless API design
-- **Blueprint Organization** - Route grouping
-
-### Model Architecture
-Each model follows standard patterns:
-- Defines table schema with constraints
-- Implements relationships with other models
-- Provides helper/business logic methods
-- Includes serialization (to_dict) methods
-
----
-
-## Troubleshooting
-
-### Container Issues
-```bash
-# Rebuild containers
-docker-compose build --no-cache
-
-# Reset everything
-docker-compose down -v
-docker-compose up --build
-```
-
-### Database Connection Errors
-- Verify MySQL is healthy: `docker-compose ps`
-- Check container logs: `docker-compose logs db`
-- Ensure database exists and user credentials are correct
-
-### Port Already in Use
-```bash
-# Find process using port 3000
-lsof -i :3000
-# Kill process
-kill -9 <PID>
-```
-
----
-
-## License
-
-This is a CS440 academic project.
-
----
-
-## Team
-
-**Aquatic Pandas Team**
-- CS440 Course Project
-- Date: 2026-03-28

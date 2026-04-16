@@ -8,15 +8,16 @@ This file defines all database models using SQLAlchemy ORM.
 Models are mapped to the database tables defined in init.sql.
 """
 
-from app import db
+from extensions import db
 from datetime import datetime
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # ==============================================================================
 # USER MODEL
 # ==============================================================================
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     """User account model with authentication and profile relationships."""
     __tablename__ = 'User'
     
@@ -71,6 +72,10 @@ class User(db.Model):
         """Return all user accounts"""
         # Relationship-backed list of linked accounts.
         return self.accounts
+
+    def get_id(self):
+        """Return the user identifier expected by Flask-Login."""
+        return str(self.user_id)
 
 
 # ==============================================================================
