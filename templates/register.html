@@ -1,14 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Register Page{% endblock %}
 {% block content %}
-    <h1>Register Page</h1>
-    <p>Register your account here</p>
-    <form action="/register" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" value="Register">
-    </form>
-        <button onclick="window.location.href='/login'">Login</button>
+ <title>Registration Page for Aquatic Pandas</title>
+    </head>
+    <body>
+         <h1>Register for an Account</h1>
+        
+        <!-- /register is a 'placeholder' for the actual registration endpoint -->
+        <form action="/register" method="post">
+                   <main class = "form-side">
+                <div class="card">
+                    <h2 class="card-title">Welcome to Aquatic Pandas</h2>
+                    <p class="card-description">Please enter your details to register</p>
+                   
+                    <div class = "input-email">
+                        <label for = "email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email" name="email" required>
+                    </div>
+
+                    <div class = "input-username">
+                        <label for = "username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username" name="username" required>
+                    </div>
+
+                    <div class = "input-password">
+                        <label for = "password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" name="password" required>
+                    </div>
+                    <!-- when button is pressed check registration details and redirect to login page or display error message -->
+                     
+                    <button type="submit" onclick="create_account()">Register</button>
+                </div>
+            </main>
+        </form>
+            <button onclick="window.location.href='/login'">Login</button>
+    </body>
 {% endblock %}

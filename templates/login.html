@@ -1,13 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Login Page{% endblock %}
 {% block content %}
-    <h1>Login to your account</h1>
-    <form action ="/login" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" value="Login">
-    </form>
-    <button onclick="window.location.href='/register'">Register</button>
+   <h1>Login to your account</h1>
+    <!-- /auth/login is a 'placeholder' for the actual login endpoint that will handle the authentication logic -->
+
+        <form action="/auth/login" method="post">
+            <main class="form-side">
+                <div class="card">
+                    <h2 class="card-title">Welcome Back</h2>
+                    <p class="card-description">Please enter your credentials to login</p>
+                    <div id="alert" class="alert" role="alert"></div>
+
+                    <!-- email input and password input fields -->
+                    <div class="input-email">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email" name="email" required>
+                    </div>
+
+                    <div class="input-password">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" name="password" required>
+                    </div>
+                    <!--when button is pressed check login credentials and redirect to home page(index.html) or display error message-->
+                    <!-- checkLogin() is a placeholder for the actual login validation function-->
+                    <button type="submit" onclick = "checkLogin()">Login</button>
+                    <!-- /auth/register-page is a 'placeholder' for the actual registration endpoint -->
+                    <a href="/auth/register-page">Don't have an account? Register</a>
+                </div>
+            </main>
+        </form>
 {% endblock %}
