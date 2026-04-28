@@ -13,7 +13,7 @@ Routes are organized by resource type:
 - Transactions (financial records)
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db
 from models import User, Account, Institution, Category, Transaction
@@ -101,7 +101,7 @@ def register():
         return jsonify({'status': 'error', 'message': 'Server error: ' + str(e)}), 500
 
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Login user with email and password
@@ -122,6 +122,10 @@ def login():
         400 Bad Request: {status: 'error', message: 'Missing fields'}
     """
     try:
+        # Serve the login HTML template for GET requests
+        if request.method == 'GET':
+            return render_template('login.html')
+            
         # Parse login payload and validate required credentials.
         data = request.get_json()
         

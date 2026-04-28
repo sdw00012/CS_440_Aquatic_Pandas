@@ -8,7 +8,7 @@ This file initializes the Flask application, configures the database,
 and registers all routes.
 """
 
-from flask import Flask
+from flask import Flask, redirect, url_for
 from dotenv import load_dotenv
 import os
 from extensions import db, login_manager
@@ -59,6 +59,11 @@ def create_app():
         app.register_blueprint(auth_bp)
         app.register_blueprint(api_bp)
         
+        # Redirect the root index to the login page
+        @app.route('/')
+        def index():
+            return redirect(url_for('auth.login'))
+
         # Return JSON error payloads for common HTTP failures.
         @app.errorhandler(404)
         def not_found(error):
