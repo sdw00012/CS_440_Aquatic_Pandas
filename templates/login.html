@@ -1,32 +1,200 @@
 {% extends "base.html" %}
-{% block title %}Login Page{% endblock %}
+{% block title %}Login – Aquatic Pandas{% endblock %}
+
 {% block content %}
-   <h1>Login to your account</h1>
-    <!-- /auth/login is a 'placeholder' for the actual login endpoint that will handle the authentication logic -->
+<style>
+    body {
+        background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+        min-height: 100vh;
+    }
 
-        <form action="/auth/login" method="post">
-            <main class="form-side">
-                <div class="card">
-                    <h2 class="card-title">Welcome Back</h2>
-                    <p class="card-description">Please enter your credentials to login</p>
-                    <div id="alert" class="alert" role="alert"></div>
+    .login-wrapper {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
 
-                    <!-- email input and password input fields -->
-                    <div class="input-email">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="Enter your email" name="email" required>
+    .login-card {
+        width: 100%;
+        max-width: 440px;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(30, 80, 200, 0.12);
+        overflow: hidden;
+    }
+
+    .login-card .card-header {
+        background: linear-gradient(135deg, #1565c0, #1e88e5);
+        padding: 2rem 2rem 1.5rem;
+        border: none;
+    }
+
+    .login-card .card-header .app-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        opacity: 0.85;
+        margin-bottom: 0.25rem;
+    }
+
+    .login-card .card-header h3 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .login-card .card-body {
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #444;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1.5px solid #d0d8e8;
+        padding: 0.65rem 1rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #1e88e5;
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.12);
+    }
+
+    .input-group-text {
+        border-radius: 8px 0 0 8px;
+        border: 1.5px solid #d0d8e8;
+        border-right: none;
+        background: #f5f8ff;
+        color: #1e88e5;
+        font-size: 1rem;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #1565c0, #1e88e5);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-login:hover {
+        opacity: 0.92;
+    }
+
+    .btn-login:active {
+        transform: scale(0.98);
+    }
+
+    .login-card .card-footer {
+        background: #f5f8ff;
+        border-top: 1px solid #e8eef8;
+        padding: 1.1rem 2rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .login-card .card-footer a {
+        color: #1565c0;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-card .card-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .divider {
+        border-top: 1px solid #e8eef8;
+        margin: 1.25rem 0;
+    }
+</style>
+
+<div class="login-wrapper">
+    <div class="login-card card">
+
+        <!-- Header -->
+        <div class="card-header text-white">
+            <div class="app-title">Aquatic Pandas</div>
+            <h3>Sign in to your account</h3>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body">
+
+            <form action="/auth/login-form" method="post">
+
+                <!-- Email -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">✉</span>
+                        </div>
+                        <input
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="you@example.com"
+                            required
+                            autocomplete="email"
+                        >
                     </div>
-
-                    <div class="input-password">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Enter your password" name="password" required>
-                    </div>
-                    <!--when button is pressed check login credentials and redirect to home page(index.html) or display error message-->
-                    <!-- checkLogin() is a placeholder for the actual login validation function-->
-                    <button type="submit" onclick = "checkLogin()">Login</button>
-                    <!-- /auth/register-page is a 'placeholder' for the actual registration endpoint -->
-                    <a href="/auth/register-page">Don't have an account? Register</a>
                 </div>
-            </main>
-        </form>
+
+                <!-- Password -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">🔒</span>
+                        </div>
+                        <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            placeholder="*********"
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    Sign In
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer">
+            <span class="text-muted">New here?</span>
+            <a href="/auth/register-page"> Create an account</a>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}
