@@ -13,7 +13,7 @@ Routes are organized by resource type:
 - Transactions (financial records)
 """
 
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db
 from models import User, Account, Institution, Category, Transaction
@@ -35,7 +35,7 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """
     Register a new user account
@@ -55,8 +55,12 @@ def register():
         409 Conflict: {status: 'error', message: 'Email already exists'}
     """
     try:
-        # Parse JSON payload from request body.
-        data = request.get_json()
+        # Serve the registration HTML template for GET requests
+        if request.method == 'GET':
+            return render_template('register.html')
+            
+        # Parse JSON payload or Form data from request body.
+        data = request.get_json(silent=True) or request.form
         
         # Validate required fields
         required_fields = ['first_name', 'last_name', 'email', 'password']
@@ -88,18 +92,22 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
+        # If this was a form submission, log the user in and redirect to home
+        if not request.is_json:
+            login_user(new_user)
+            return redirect(url_for('index'))
+
         return jsonify({
             'status': 'success',
             'message': 'User registered successfully',
             'user_id': new_user.user_id
         }), 201
-        
+
     except ValueError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'status': 'error', 'message': 'Server error: ' + str(e)}), 500
-
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -126,8 +134,8 @@ def login():
         if request.method == 'GET':
             return render_template('login.html')
             
-        # Parse login payload and validate required credentials.
-        data = request.get_json()
+        # Parse login payload (JSON or Form).
+        data = request.get_json(silent=True) or request.form
         
         # Validate required fields
         if not data or not data.get('email') or not data.get('password'):
@@ -143,13 +151,17 @@ def login():
         # Create authenticated session for this user.
         login_user(user, remember=True)
         
+        # If this was a form submission, redirect to the home page
+        if not request.is_json:
+            return redirect(url_for('index'))
+
         return jsonify({
             'status': 'success',
             'message': 'Login successful',
             'user': user.to_dict(),
             'user_id': user.user_id
         }), 200
-        
+
     except Exception as e:
         return jsonify({'status': 'error', 'message': 'Server error: ' + str(e)}), 500
 
