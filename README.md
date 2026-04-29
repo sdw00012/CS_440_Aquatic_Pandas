@@ -62,7 +62,7 @@ aquatic-pandas-bms/
 ├── templates
 │   ├── accounts.html
 │   ├── base.html
-│   ├── buget.html
+│   ├── budget.html
 │   ├── index.html
 │   ├── login.html
 │   ├── profile.html
@@ -74,12 +74,14 @@ aquatic-pandas-bms/
 
 ## Run the App
 
+It is recommended to run in a Linux/WSL environment with Docker and Docker Compose installed.
+
 ### Run With Docker (Recommended)
 
 1. Copy and Setup Environment
 
 ```bash
-cp .env-example .env
+cp .env-example .env && nano .env
 ```
 
 2. Start Services
