@@ -27,15 +27,6 @@ graph LR
 - MySQL 8.0
 - Docker / Docker Compose
 
-## Documentation
-
-- API Reference - Detailed endpoint documentation and roadmap.
-- Database Schema - ORM models and relationship logic.
-- Docker Setup - Detailed container management.
-- Development Guide - Local setup and contribution notes.
-- Testing Guide - How to verify endpoints using curl.
-- App Mockup - Visual flow and dashboard layout.
-
 ## Current Status
 
 - Backend API is implemented and runs from `app.py`.
@@ -44,12 +35,10 @@ graph LR
 - MySQL schema is defined in `init.sql` and mirrored by SQLAlchemy models in `models.py`.
 - Docker setup is available for local development.
 - HTML templates exist in `templates/`, but they are not wired into Flask routes in the current code.
-
-## Notes and Gaps
-
-- Existing templates and static assets are not connected to Flask view routes yet.
-- Planned routes in this README are explicitly marked and may not exist yet in `routes.py`.
-- There is no automated test suite in the repository at this time.
+- Notes and Gaps
+    - Existing templates and static assets are not connected to Flask view routes yet.
+    - Planned routes in this README are explicitly marked and may not exist yet in `routes.py`.
+    - There is no automated test suite in the repository at this time.
 
 ## Run the App
 
@@ -66,13 +55,13 @@ cp .env-example .env && nano .env
 2. Start Services
 
 ```bash
-docker compose down --remove-orphans
+docker compose up --build
 ```
 
 3. Access Services
 
 - App: `http://localhost:3000`
-- MySQL: `localhost:3306`
+- MySQL: `http://localhost:3306`
 
 4. Stop services:
 
@@ -83,6 +72,12 @@ docker compose down --remove-orphans
 ### Run Locally (Without Docker, and NOT RECOMMENDED)
 
 1. Create and activate a virtual environment.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
 2. Install dependencies:
 
 ```bash
@@ -107,22 +102,13 @@ cp .env.example .env
 python app.py
 ```
 
-The app reads:
-
-- `FLASK_HOST` (default: `0.0.0.0`)
-- `FLASK_PORT` (default: `3000`)
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-- `SECRET_KEY`
-
-## Useful Commands
+### Useful Commands
 
 ```bash
-# View app logs
+# view logs
 docker-compose logs -f app
-
-# View db logs
 docker-compose logs -f db
 
-# Open MySQL shell in container
+# open MySQL shell in container
 docker-compose exec db mysql -u pandas_user -p aquatic_pandas
 ```
