@@ -23,6 +23,7 @@ import re
 # Create Blueprints for organizing routes
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 api_bp = Blueprint('api', __name__, url_prefix='/api')
+main_bp = Blueprint('main', __name__)
 
 # ==============================================================================
 # AUTHENTICATION ROUTES
@@ -95,7 +96,7 @@ def register():
         # If this was a form submission, log the user in and redirect to home
         if not request.is_json:
             login_user(new_user)
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
 
         return jsonify({
             'status': 'success',
@@ -153,7 +154,7 @@ def login():
         
         # If this was a form submission, redirect to the home page
         if not request.is_json:
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
 
         return jsonify({
             'status': 'success',
@@ -199,6 +200,69 @@ def get_current_user():
         'status': 'success',
         'user': current_user.to_dict()
     }), 200
+
+
+# ==============================================================================
+# VIEW ROUTES (Pages)
+# ==============================================================================
+
+@main_bp.route('/')
+def index():
+    """Root route: Redirect to login if not authenticated, otherwise show dashboard"""
+    if current_user.is_authenticated:
+        return render_template('index.html')
+    return redirect(url_for('auth.login'))
+
+@main_bp.route('/budget')
+@login_required
+def budget_page():
+    """Display budget categories and spending"""
+    return render_template('budget.html', categories=current_user.categories)
+
+@main_bp.route('/transactions')
+@login_required
+def transactions_page():
+    """Display all transactions for the current user"""
+    # Gather transactions from all of the user's accounts
+    all_transactions = []
+    for account in current_user.accounts:
+        all_transactions.extend(account.transactions)
+    # Sort by date descending
+    all_transactions.sort(key=lambda x: x.date, reverse=True)
+    return render_template('transactions.html', transactions=all_transactions)
+
+@main_bp.route('/accounts')
+@login_required
+def accounts_page():
+    """Display list of user accounts"""
+    return render_template('accounts.html', accounts=current_user.accounts)
+
+@main_bp.route('/profile')
+@login_required
+def profile_page():
+    """Display and manage user profile"""
+    return render_template('profile.html', user=current_user)
+
+
+# ==============================================================================
+# ERROR HANDLERS
+# ==============================================================================
+
+@main_bp.app_errorhandler(404)
+def not_found(error):
+    """Return JSON error payloads for common HTTP failures."""
+    return {'error': 'Resource not found'}, 404
+
+@main_bp.app_errorhandler(500)
+def internal_error(error):
+    """Global error handler for server-side exceptions."""
+    db.session.rollback()
+    return {'error': 'Internal server error'}, 500
+
+@main_bp.app_errorhandler(400)
+def bad_request(error):
+    """Handler for malformed requests."""
+    return {'error': 'Bad request'}, 400
 
 
 # ==============================================================================

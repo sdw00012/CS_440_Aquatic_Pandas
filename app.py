@@ -8,7 +8,7 @@ This file initializes the Flask application, configures the database,
 and registers all routes.
 """
 
-from flask import Flask, redirect, url_for
+from flask import Flask
 from dotenv import load_dotenv
 import os
 from extensions import db, login_manager
@@ -42,26 +42,11 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    # Register auth and API route groups.
-    from routes import auth_bp, api_bp
+    # Register Blueprints.
+    from routes import auth_bp, api_bp, main_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
-
-    # Root route: Redirect to login if not authenticated, otherwise show dashboard
-    @app.route('/')
-    def index():
-        from flask import render_template
-        if current_user.is_authenticated:
-            return render_template('index.html')
-        return redirect(url_for('auth.login'))
-
-    @app.route('/login')
-    def login_redirect():
-        return redirect(url_for('auth.login'))
-
-    @app.route('/register')
-    def register_redirect():
-        return redirect(url_for('auth.register'))
+    app.register_blueprint(main_bp)
 
     # Return JSON error payloads for common HTTP failures.
     @app.errorhandler(404)

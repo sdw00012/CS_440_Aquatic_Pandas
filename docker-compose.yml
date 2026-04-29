@@ -6,15 +6,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - FLASK_ENV=development
-      - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=pandas_user
-      - DB_PASSWORD=pandas_password
-      - DB_NAME=aquatic_pandas
-      - SECRET_KEY=dev-secret-key-change-in-production
+      - FLASK_ENV=${FLASK_ENV}
+      - FLASK_HOST=${FLASK_HOST}
+      - FLASK_PORT=${FLASK_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       db:
         condition: service_healthy
@@ -28,10 +28,10 @@ services:
     image: mysql:8.0
     container_name: aquatic_pandas_db
     environment:
-      - MYSQL_USER=pandas_user
-      - MYSQL_PASSWORD=pandas_password
-      - MYSQL_DATABASE=aquatic_pandas
-      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
