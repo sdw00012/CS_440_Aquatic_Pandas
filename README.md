@@ -2,6 +2,21 @@
 
 Aquatic Pandas is a Flask + MySQL budget tracking backend with user authentication, account management, category budgeting, and transaction tracking, all running in a Docker container. This project provides a robust foundation for personal financial data management, featuring a clean RESTful API, structured database models, and a pre-configured environment designed to streamline the development-to-deployment workflow.
 
+## Project Structure
+
+```mermaid
+graph LR
+    User((User)) --> Auth[Security & Auth]
+    Auth --> Dashboard[Financial Dashboard]
+    
+    Dashboard --> Accounts[Accounts & Institutions]
+    Dashboard --> Budgets[Budget Categories]
+    Dashboard --> Transactions[Daily Transactions]
+    
+    Transactions -->|Updates Balance| Accounts
+    Transactions -->|Checked Against| Budgets
+```
+
 ## Tech Stack
 
 - Python 3.11
@@ -12,15 +27,6 @@ Aquatic Pandas is a Flask + MySQL budget tracking backend with user authenticati
 - MySQL 8.0
 - Docker / Docker Compose
 
-## Current Status
-
-- Backend API is implemented and runs from `app.py`.
-- Authentication uses Flask-Login session cookies (not token-based auth).
-- CRUD endpoints exist for users, accounts, categories, and transactions.
-- MySQL schema is defined in `init.sql` and mirrored by SQLAlchemy models in `models.py`.
-- Docker setup is available for local development.
-- HTML templates exist in `templates/`, but they are not wired into Flask routes in the current code.
-
 ## Documentation
 
 - API Reference - Detailed endpoint documentation and roadmap.
@@ -30,47 +36,20 @@ Aquatic Pandas is a Flask + MySQL budget tracking backend with user authenticati
 - Testing Guide - How to verify endpoints using curl.
 - App Mockup - Visual flow and dashboard layout.
 
-## Project Structure
+## Current Status
 
-```sh
-aquatic-pandas-bms/
-├── app.py
-├── close.sh
-├── docker-compose.yml
-├── Dockerfile
-├── docs
-│   ├── APPLICATION_PSEUDOCODE.md
-│   ├── App_Mockup.md
-│   ├── DOCKER_SETUP.md
-│   └── Doc_TESTING.md
-├── extensions.py
-├── init.sql
-├── models.py
-├── __pycache__
-│   ├── extensions.cpython-311.pyc
-│   ├── models.cpython-311.pyc
-│   └── routes.cpython-311.pyc
-├── README.md
-├── requirements.txt
-├── restart.sh
-├── routes.py
-├── run.sh
-├── start.sh
-├── static
-│   ├── bootstrap.css
-│   └── style.css
-├── templates
-│   ├── accounts.html
-│   ├── base.html
-│   ├── budget.html
-│   ├── index.html
-│   ├── login.html
-│   ├── profile.html
-│   ├── register.html
-│   └── transactions.html
-└── testing.sh
-```
+- Backend API is implemented and runs from `app.py`.
+- Authentication uses Flask-Login session cookies (not token-based auth).
+- CRUD endpoints exist for users, accounts, categories, and transactions.
+- MySQL schema is defined in `init.sql` and mirrored by SQLAlchemy models in `models.py`.
+- Docker setup is available for local development.
+- HTML templates exist in `templates/`, but they are not wired into Flask routes in the current code.
 
+## Notes and Gaps
+
+- Existing templates and static assets are not connected to Flask view routes yet.
+- Planned routes in this README are explicitly marked and may not exist yet in `routes.py`.
+- There is no automated test suite in the repository at this time.
 
 ## Run the App
 
@@ -134,12 +113,6 @@ The app reads:
 - `FLASK_PORT` (default: `3000`)
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 - `SECRET_KEY`
-
-## Notes and Gaps
-
-- Existing templates and static assets are not connected to Flask view routes yet.
-- Planned routes in this README are explicitly marked and may not exist yet in `routes.py`.
-- There is no automated test suite in the repository at this time.
 
 ## Useful Commands
 
