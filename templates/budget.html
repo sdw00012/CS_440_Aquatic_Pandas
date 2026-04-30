@@ -23,9 +23,25 @@
             {% endfor %}
     </table>
 
-    <div class="col-md-12 text-end">
-        <a class="btn btn-primary" href="/category/create">Add Category</a>
+    <form method="POST" action="/categories">
+    <div class="row align-items-end">
+        <div class="col-md-4">
+            <label for="categoryName" class="form-label">Category Name</label>
+            <input type="text" class="form-control" id="categoryName" name="name" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="budgetedAmount" class="form-label">Budgeted Amount</label>
+            <input type="number" step="0.01" class="form-control" id="budgetedAmount" name="budgeted_amount" required>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Add Category</button>
+        </div>
     </div>
+</form>
+
+<br/>
 
     <table>
         <tr>
