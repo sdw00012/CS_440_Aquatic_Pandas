@@ -1,46 +1,249 @@
 {% extends "base.html" %}
-{% block title %}Register Page{% endblock %}
+{% block title %}Register – Aquatic Pandas{% endblock %}
+ 
 {% block content %}
- <title>Registration Page for Aquatic Pandas</title>
-    </head>
-    <body>
-         <h1>Register for an Account</h1>
-        
-        <!-- /register is a 'placeholder' for the actual registration endpoint -->
-        <form action="/register" method="post">
-                   <main class = "form-side">
-                <div class="card">
-                    <h2 class="card-title">Welcome to Aquatic Pandas</h2>
-                    <p class="card-description">Please enter your details to register</p>
-                   
-                    <div class = "input-email">
-                        <label for = "email">Email</label>
-                        <input type="email" id="email" placeholder="Enter your email" name="email" required>
+<style>
+    body {
+        background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+        min-height: 100vh;
+    }
+ 
+    .login-wrapper {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+ 
+    .login-card {
+        width: 100%;
+        max-width: 440px;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(30, 80, 200, 0.12);
+        overflow: hidden;
+    }
+ 
+    .login-card .card-header {
+        background: linear-gradient(135deg, #1565c0, #1e88e5);
+        padding: 2rem 2rem 1.5rem;
+        border: none;
+    }
+ 
+    .login-card .card-header .app-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        opacity: 0.85;
+        margin-bottom: 0.25rem;
+    }
+ 
+    .login-card .card-header h3 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+    }
+ 
+    .login-card .card-body {
+        padding: 2rem;
+        background: #fff;
+    }
+ 
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #444;
+        margin-bottom: 0.4rem;
+    }
+ 
+    .form-control {
+        border-radius: 8px;
+        border: 1.5px solid #d0d8e8;
+        padding: 0.65rem 1rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+ 
+    .form-control:focus {
+        border-color: #1e88e5;
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.12);
+    }
+ 
+    .input-group-text {
+        border-radius: 8px 0 0 8px;
+        border: 1.5px solid #d0d8e8;
+        border-right: none;
+        background: #f5f8ff;
+        color: #1e88e5;
+        font-size: 1rem;
+    }
+ 
+    .input-group .form-control {
+        border-radius: 0 8px 8px 0;
+    }
+ 
+    .btn-login {
+        background: linear-gradient(135deg, #1565c0, #1e88e5);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        transition: opacity 0.2s, transform 0.1s;
+    }
+ 
+    .btn-login:hover {
+        opacity: 0.92;
+    }
+ 
+    .btn-login:active {
+        transform: scale(0.98);
+    }
+ 
+    .login-card .card-footer {
+        background: #f5f8ff;
+        border-top: 1px solid #e8eef8;
+        padding: 1.1rem 2rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+ 
+    .login-card .card-footer a {
+        color: #1565c0;
+        font-weight: 600;
+        text-decoration: none;
+    }
+ 
+    .login-card .card-footer a:hover {
+        text-decoration: underline;
+    }
+ 
+    .divider {
+        border-top: 1px solid #e8eef8;
+        margin: 1.25rem 0;
+    }
+ 
+    .name-row {
+        display: flex;
+        gap: 1rem;
+    }
+ 
+    .name-row .form-group {
+        flex: 1;
+    }
+</style>
+ 
+<div class="login-wrapper">
+    <div class="login-card card">
+ 
+        <!-- Header -->
+        <div class="card-header text-white">
+            <div class="app-title">Aquatic Pandas</div>
+            <h3>Create an account</h3>
+        </div>
+ 
+        <!-- Body -->
+        <div class="card-body">
+ 
+ 
+            <form action="/auth/register" method="post">
+ 
+                <!-- First & Last Name -->
+                <div class="name-row">
+                    <div class="form-group mb-3">
+                        <label class="form-label">First Name</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="first_name"
+                            placeholder="John"
+                            required
+                        >
                     </div>
-
-                    <div class = "input-first-name">
-                        <label for = "first_name">First Name</label>
-                        <input type="text" id="first_name" placeholder="Enter your first name" name="first_name" required>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="last_name"
+                            placeholder="Doe"
+                            required
+                        >
                     </div>
-                    <div class = "input-last-name">
-                        <label for = "last_name">Last Name</label>
-                        <input type="text" id="last_name" placeholder="Enter your last name" name="last_name" required>
-                    </div>
-                    
-                   <div class ="input-phone-number">
-                        <label for = "phone_number">Phone Number</label>
-                        <input type="text" id="phone_number" placeholder="Enter your phone number" name="phone_number" required>
-
-                    <div class = "input-password">
-                        <label for = "password">Password</label>
-                        <input type="password" id="password" placeholder="Enter your password" name="password" required>
-                    </div>
-                    <!-- when button is pressed check registration details and redirect to login page or display error message -->
-                     
-                    <button type="submit" onclick="create_account()">Register</button>
                 </div>
-            </main>
-        </form>
-            <button onclick="window.location.href='/login'">Login</button>
-    </body>
+ 
+                <!-- Email -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">✉</span>
+                        </div>
+                        <input
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="you@example.com"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+                </div>
+ 
+                <!-- Phone-->
+                <div class="form-group mb-3">
+                    <label class="form-label">Phone <span class="text-muted" style="text-transform:none; font-weight:400;">(optional)</span></label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"></span>
+                        </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="phone"
+                            required
+                            placeholder="555-123-4567"
+                        >
+                    </div>
+                </div>
+ 
+                <!-- Password -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"></span>
+                        </div>
+                        <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            placeholder="At least 6 characters"
+                            required
+                            autocomplete="new-password"
+                        >
+                    </div>
+                </div>
+                <div class="divider"></div>
+ 
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    Create Account
+                </button>
+ 
+            </form>
+ 
+        </div>
+ 
+        <div class="card-footer">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{{ url_for('auth.login') }}"> Sign in</a>
+        </div>
+ 
+    </div>
+</div>
+ 
 {% endblock %}

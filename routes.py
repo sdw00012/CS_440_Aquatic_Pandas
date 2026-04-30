@@ -13,7 +13,7 @@ Routes are organized by resource type:
 - Transactions (financial records)
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db
 from models import User, Account, Institution, Category, Transaction
@@ -23,6 +23,7 @@ import re
 # Create Blueprints for organizing routes
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 api_bp = Blueprint('api', __name__, url_prefix='/api')
+main_bp = Blueprint('main', __name__)
 
 # ==============================================================================
 # AUTHENTICATION ROUTES
@@ -35,7 +36,7 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """
     Register a new user account
@@ -55,8 +56,12 @@ def register():
         409 Conflict: {status: 'error', message: 'Email already exists'}
     """
     try:
-        # Parse JSON payload from request body.
-        data = request.get_json()
+        # Serve the registration HTML template for GET requests
+        if request.method == 'GET':
+            return render_template('register.html')
+            
+        # Parse JSON payload or Form data from request body.
+        data = request.get_json(silent=True) or request.form
         
         # Validate required fields
         required_fields = ['first_name', 'last_name', 'email', 'password']
@@ -88,20 +93,24 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
+        # If this was a form submission, log the user in and redirect to home
+        if not request.is_json:
+            login_user(new_user)
+            return redirect(url_for('main.index'))
+
         return jsonify({
             'status': 'success',
             'message': 'User registered successfully',
             'user_id': new_user.user_id
         }), 201
-        
+
     except ValueError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'status': 'error', 'message': 'Server error: ' + str(e)}), 500
 
-
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Login user with email and password
@@ -122,8 +131,12 @@ def login():
         400 Bad Request: {status: 'error', message: 'Missing fields'}
     """
     try:
-        # Parse login payload and validate required credentials.
-        data = request.get_json()
+        # Serve the login HTML template for GET requests
+        if request.method == 'GET':
+            return render_template('login.html')
+            
+        # Parse login payload (JSON or Form).
+        data = request.get_json(silent=True) or request.form
         
         # Validate required fields
         if not data or not data.get('email') or not data.get('password'):
@@ -139,13 +152,17 @@ def login():
         # Create authenticated session for this user.
         login_user(user, remember=True)
         
+        # If this was a form submission, redirect to the home page
+        if not request.is_json:
+            return redirect(url_for('main.index'))
+
         return jsonify({
             'status': 'success',
             'message': 'Login successful',
             'user': user.to_dict(),
             'user_id': user.user_id
         }), 200
-        
+
     except Exception as e:
         return jsonify({'status': 'error', 'message': 'Server error: ' + str(e)}), 500
 
@@ -183,6 +200,108 @@ def get_current_user():
         'status': 'success',
         'user': current_user.to_dict()
     }), 200
+
+
+# ==============================================================================
+# VIEW ROUTES (Pages)
+# ==============================================================================
+
+@main_bp.route('/')
+def index():
+    """Root route: Redirect to login if not authenticated, otherwise show dashboard"""
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+    
+    # Calculate total account balance
+    total_balance = sum(float(account.get_balance()) for account in current_user.accounts)
+    
+    # Get all categories with calculated metrics
+    categories = current_user.categories
+    total_budget = sum(float(cat.budget) for cat in categories)
+    total_spent = sum(float(cat.get_spent_amount()) for cat in categories)
+    total_remaining = total_budget - total_spent
+    
+    # Get recent transactions (last 10) from all accounts, sorted by date
+    all_transactions = []
+    for account in current_user.accounts:
+        all_transactions.extend(account.transactions)
+    all_transactions.sort(key=lambda x: x.date, reverse=True)
+    recent_transactions = all_transactions[:10]
+    
+    # Prepare accounts with balance info
+    accounts_with_balance = [
+        {
+            'id': account.account_id,
+            'name': account.account_name,
+            'type': account.account_type,
+            'institution': account.institution.institution_name,
+            'balance': float(account.get_balance()),
+            'website': account.institution.website
+        }
+        for account in current_user.accounts
+    ]
+    
+    return render_template(
+        'index.html',
+        total_balance=total_balance,
+        total_budget=total_budget,
+        total_spent=total_spent,
+        total_remaining=total_remaining,
+        categories=categories,
+        recent_transactions=recent_transactions,
+        accounts=accounts_with_balance
+    )
+
+@main_bp.route('/budget')
+@login_required
+def budget_page():
+    """Display budget categories and spending"""
+    return render_template('budget.html', categories=current_user.categories)
+
+@main_bp.route('/transactions')
+@login_required
+def transactions_page():
+    """Display all transactions for the current user"""
+    # Gather transactions from all of the user's accounts
+    all_transactions = []
+    for account in current_user.accounts:
+        all_transactions.extend(account.transactions)
+    # Sort by date descending
+    all_transactions.sort(key=lambda x: x.date, reverse=True)
+    return render_template('transactions.html', transactions=all_transactions)
+
+@main_bp.route('/accounts')
+@login_required
+def accounts_page():
+    """Display list of user accounts"""
+    return render_template('accounts.html', accounts=current_user.accounts)
+
+@main_bp.route('/profile')
+@login_required
+def profile_page():
+    """Display and manage user profile"""
+    return render_template('profile.html', user=current_user)
+
+
+# ==============================================================================
+# ERROR HANDLERS
+# ==============================================================================
+
+@main_bp.app_errorhandler(404)
+def not_found(error):
+    """Return JSON error payloads for common HTTP failures."""
+    return {'error': 'Resource not found'}, 404
+
+@main_bp.app_errorhandler(500)
+def internal_error(error):
+    """Global error handler for server-side exceptions."""
+    db.session.rollback()
+    return {'error': 'Internal server error'}, 500
+
+@main_bp.app_errorhandler(400)
+def bad_request(error):
+    """Handler for malformed requests."""
+    return {'error': 'Bad request'}, 400
 
 
 # ==============================================================================

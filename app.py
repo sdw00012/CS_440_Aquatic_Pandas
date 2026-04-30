@@ -12,6 +12,7 @@ from flask import Flask, render_template
 from dotenv import load_dotenv
 import os
 from extensions import db, login_manager
+from flask_login import current_user
 
 # Load environment variables
 # Reads values from a local .env file when present.
@@ -41,42 +42,38 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
+    # Register Blueprints.
+    from routes import auth_bp, api_bp, main_bp
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(main_bp)
+
+    # Return JSON error payloads for common HTTP failures.
+    @app.errorhandler(404)
+    def not_found(error):
+        return {'error': 'Resource not found'}, 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return {'error': 'Internal server error'}, 500
+    
+    @app.errorhandler(400)
+    def bad_request(error):
+        return {'error': 'Bad request'}, 400
+
     # Use app context for model registration and database/table operations.
     with app.app_context():
         # Import models here to avoid circular import issues.
         from models import User, Account, Institution, Category, Transaction
-        
+
         # Create any missing tables from the ORM models.
         db.create_all()
-        
+
         # Tell Flask-Login how to convert stored user_id -> User object.
         @login_manager.user_loader
         def load_user(user_id):
             return User.query.get(int(user_id))
-        
-        # Register auth and API route groups.
-        from routes import auth_bp, api_bp
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(api_bp)
-        
-        # Return JSON error payloads for common HTTP failures.
-        @app.errorhandler(404)
-        def not_found(error):
-            return {'error': 'Resource not found'}, 404
-        
-        @app.errorhandler(500)
-        def internal_error(error):
-            db.session.rollback()
-            return {'error': 'Internal server error'}, 500
-        
-        @app.errorhandler(400)
-        def bad_request(error):
-            return {'error': 'Bad request'}, 400
-
-        from frontend_routes import register_routes
-        register_routes(app)
-
-    
     
     return app
 

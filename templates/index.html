@@ -1,6 +1,320 @@
 {% extends "base.html" %}
 {% block title %}Home Page{% endblock %}
 {% block content %}
-    <h1>Welcome!</h1>
-    <!-- This page should have interactive charts with summary information of the user's budget and spending. -->
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .stat-card.balance {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .stat-card.budget {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .stat-card.spent {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .stat-card.remaining {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+    .stat-card h5 {
+        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .stat-card .amount {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .category-progress {
+        margin-bottom: 20px;
+    }
+    .category-progress .category-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .category-progress .progress {
+        height: 24px;
+        border-radius: 4px;
+    }
+    .category-progress .progress-bar {
+        line-height: 24px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .over-budget {
+        background-color: #dc3545 !important;
+    }
+    
+    .dashboard-section {
+        margin-bottom: 40px;
+    }
+    .dashboard-section h3 {
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .account-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .account-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .account-card .account-name {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .account-card .account-type {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+    .account-card .account-balance {
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .account-card .account-institution {
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+    }
+    
+    .transaction-table {
+        font-size: 14px;
+    }
+    .transaction-table td {
+        vertical-align: middle;
+    }
+    .inflow {
+        color: #28a745;
+        font-weight: 600;
+    }
+    .outflow {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .action-buttons {
+        margin-top: 15px;
+    }
+    .action-buttons .btn {
+        margin-right: 10px;
+    }
+</style>
+
+<div class="container-fluid" style="padding: 30px 20px;">
+    <h1 style="margin-bottom: 30px; font-weight: 700; color: #333;">Dashboard</h1>
+    
+    <!-- Summary Stats Section -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card balance">
+                <h5>Total Account Balance</h5>
+                <div class="amount">${{ "%.2f"|format(total_balance) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card budget">
+                <h5>Total Budget</h5>
+                <div class="amount">${{ "%.2f"|format(total_budget) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card spent">
+                <h5>Total Spent</h5>
+                <div class="amount">${{ "%.2f"|format(total_spent) }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card remaining">
+                <h5>Total Remaining</h5>
+                <div class="amount" style="{% if total_remaining < 0 %}color: #fff;{% endif %}">
+                    ${{ "%.2f"|format(total_remaining) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Categories Section -->
+    <div class="dashboard-section">
+        <h3>Budget Categories</h3>
+        {% if categories %}
+            <div class="row">
+                <div class="col-md-8">
+                    {% for category in categories %}
+                        <div class="category-progress">
+                            <div class="category-name">
+                                <span>{{ category.category_name }}</span>
+                                <span>${{ "%.2f"|format(category.get_spent_amount()) }} / ${{ "%.2f"|format(category.budget) }}</span>
+                            </div>
+                            {% set spent = category.get_spent_amount() %}
+                            {% set budget = category.budget %}
+                            {% set percentage = (spent / budget * 100) if budget > 0 else 0 %}
+                            {% set is_over = spent > budget %}
+                            <div class="progress">
+                                <div class="progress-bar {% if is_over %}over-budget{% elif percentage > 75 %}bg-warning{% elif percentage > 50 %}bg-info{% else %}bg-success{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ [percentage, 100]|min }}%;"
+                                     aria-valuenow="{{ percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ "%.0f"|format(percentage) }}%
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h5 style="margin-bottom: 15px; font-weight: 700;">Budget Summary</h5>
+                        <table style="width: 100%; font-size: 14px;">
+                            <tr style="margin-bottom: 8px; display: block;">
+                                <td style="font-weight: 600;">Total Budgeted:</td>
+                                <td style="float: right; color: #667eea;">${{ "%.2f"|format(total_budget) }}</td>
+                            </tr>
+                            <tr style="margin-bottom: 8px; display: block;">
+                                <td style="font-weight: 600;">Total Spent:</td>
+                                <td style="float: right; color: #4facfe;">${{ "%.2f"|format(total_spent) }}</td>
+                            </tr>
+                            <tr style="margin-bottom: 8px; display: block; padding-top: 10px; border-top: 1px solid #ddd;">
+                                <td style="font-weight: 600;">Remaining:</td>
+                                <td style="float: right; color: #43e97b; font-weight: bold;">${{ "%.2f"|format(total_remaining) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a class="btn btn-primary" href="{{ url_for('main.budget_page') }}">View Full Budget</a>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <p>No budget categories yet.</p>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('main.budget_page') }}">Create a Category</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Transactions Section -->
+    <div class="dashboard-section">
+        <h3>Recent Transactions</h3>
+        {% if recent_transactions %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped transaction-table">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th>Date</th>
+                            <th>Account</th>
+                            <th>Payee</th>
+                            <th>Category</th>
+                            <th>Memo</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.date.strftime('%m/%d/%Y') }}</td>
+                                <td>{{ transaction.account.account_name }}</td>
+                                <td>{{ transaction.payee or 'N/A' }}</td>
+                                <td>{{ transaction.category.category_name if transaction.category else 'Uncategorized' }}</td>
+                                <td>{{ transaction.memo or '-' }}</td>
+                                <td style="text-align: right;">
+                                    {% if transaction.outflow > 0 %}
+                                        <span class="outflow">-${{ "%.2f"|format(transaction.outflow) }}</span>
+                                    {% elif transaction.inflow > 0 %}
+                                        <span class="inflow">+${{ "%.2f"|format(transaction.inflow) }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="action-buttons">
+                <a class="btn btn-primary" href="{{ url_for('main.transactions_page') }}">View All Transactions</a>
+                <a class="btn btn-success" href="{{ url_for('main.transactions_page') }}">Add Transaction</a>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <p>No transactions yet.</p>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('main.transactions_page') }}">Create a Transaction</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Accounts Section -->
+    <div class="dashboard-section">
+        <h3>Your Accounts</h3>
+        {% if accounts %}
+            <div class="row">
+                {% for account in accounts %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="account-card">
+                            <div class="account-name">{{ account.name }}</div>
+                            <div class="account-type">{{ account.type }}</div>
+                            <div class="account-institution">{{ account.institution }}</div>
+                            <hr style="margin: 15px 0;">
+                            <div>
+                                <span style="color: #666; font-size: 12px;">ACCOUNT BALANCE</span>
+                                <div class="account-balance">${{ "%.2f"|format(account.balance) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="action-buttons">
+                <a class="btn btn-primary" href="{{ url_for('main.accounts_page') }}">View All Accounts</a>
+                <a class="btn btn-success" href="{{ url_for('main.accounts_page') }}">Add Account</a>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <p>No accounts yet. Create your first account to get started!</p>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('main.accounts_page') }}">Create an Account</a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Optional: Add interactive features if needed in the future
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard loaded successfully');
+    });
+</script>
 {% endblock %}
