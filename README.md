@@ -137,13 +137,13 @@ Template files exist and are expected to be wired later to view routes (for exam
 1. Copy and Setup Environment
 
 ```bash
-cp .env-example .env
+cp .env.example .env
 ```
 
 2. Start Services
 
 ```bash
-docker compose down --remove-orphans
+docker compose up
 ```
 
 3. Access Services

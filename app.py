@@ -8,7 +8,7 @@ This file initializes the Flask application, configures the database,
 and registers all routes.
 """
 
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 import os
 from extensions import db, login_manager
@@ -72,6 +72,11 @@ def create_app():
         @app.errorhandler(400)
         def bad_request(error):
             return {'error': 'Bad request'}, 400
+
+        from frontend_routes import register_routes
+        register_routes(app)
+
+    
     
     return app
 
