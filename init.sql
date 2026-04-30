@@ -111,3 +111,7 @@ CREATE INDEX idx_category_user_id ON Category(user_id);
 CREATE INDEX idx_transaction_account_id ON Transaction(account_id);
 CREATE INDEX idx_transaction_category_id ON Transaction(category_id);
 CREATE INDEX idx_transaction_date ON Transaction(date);
+
+-- Composite indexes for common multi-column filters
+CREATE INDEX idx_transaction_account_date ON Transaction(account_id, date);
+CREATE INDEX idx_transaction_category_date ON Transaction(category_id, date);
