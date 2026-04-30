@@ -209,9 +209,48 @@ def get_current_user():
 @main_bp.route('/')
 def index():
     """Root route: Redirect to login if not authenticated, otherwise show dashboard"""
-    if current_user.is_authenticated:
-        return render_template('index.html')
-    return redirect(url_for('auth.login'))
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+    
+    # Calculate total account balance
+    total_balance = sum(float(account.get_balance()) for account in current_user.accounts)
+    
+    # Get all categories with calculated metrics
+    categories = current_user.categories
+    total_budget = sum(float(cat.budget) for cat in categories)
+    total_spent = sum(float(cat.get_spent_amount()) for cat in categories)
+    total_remaining = total_budget - total_spent
+    
+    # Get recent transactions (last 10) from all accounts, sorted by date
+    all_transactions = []
+    for account in current_user.accounts:
+        all_transactions.extend(account.transactions)
+    all_transactions.sort(key=lambda x: x.date, reverse=True)
+    recent_transactions = all_transactions[:10]
+    
+    # Prepare accounts with balance info
+    accounts_with_balance = [
+        {
+            'id': account.account_id,
+            'name': account.account_name,
+            'type': account.account_type,
+            'institution': account.institution.institution_name,
+            'balance': float(account.get_balance()),
+            'website': account.institution.website
+        }
+        for account in current_user.accounts
+    ]
+    
+    return render_template(
+        'index.html',
+        total_balance=total_balance,
+        total_budget=total_budget,
+        total_spent=total_spent,
+        total_remaining=total_remaining,
+        categories=categories,
+        recent_transactions=recent_transactions,
+        accounts=accounts_with_balance
+    )
 
 @main_bp.route('/budget')
 @login_required
