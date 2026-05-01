@@ -5,12 +5,13 @@
 
     <!-- Selection for the month -->
 
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped table-primary">
         <thead>
             <th>Category</th>
             <th>Budgeted Amount</th>
             <th>Amount Spent</th>
             <th>Amount Remaining</th>
+            <th></th>
         </thead>
         <tbody>
             {% for category in categories %}
@@ -19,27 +20,26 @@
                 <td>{{ category.budgeted_amount }}</td>
                 <td>{{ category.amount_spent }}</td>
                 <td>{{ category.amount_remaining }}</td>
+                <td><a href="/categories/{{ category.id }}/delete" class="btn btn-close float-end"></a></td>
             </tr>
             {% endfor %}
     </table>
 
-    <form method="POST" action="/categories">
-    <div class="row align-items-end">
-        <div class="col-md-4">
-            <label for="categoryName" class="form-label">Category Name</label>
-            <input type="text" class="form-control" id="categoryName" name="name" required>
-        </div>
+    <form method="POST" action="/users/{{ user_id }}/categories">
+        <div class="row align-items-end">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="categoryName" name="name" required placeholder="Category Name">
+            </div>
 
-        <div class="col-md-4">
-            <label for="budgetedAmount" class="form-label">Budgeted Amount</label>
-            <input type="number" step="0.01" class="form-control" id="budgetedAmount" name="budgeted_amount" required>
-        </div>
+            <div class="col-md-4">
+                <input type="number" step="0.01" class="form-control" id="budgetedAmount" name="budgeted_amount" required placeholder="Budgeted Amount">
+            </div>
 
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-primary w-100">Add Category</button>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Add Category</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
 
 <br/>
 
