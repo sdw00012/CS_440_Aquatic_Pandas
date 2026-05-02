@@ -419,6 +419,7 @@ def accounts_page():
             'name': account.account_name,
             'type': account.account_type,
             'institution': account.institution.institution_name,
+            'starting_balance': float(account.starting_balance or 0),
             'website': account.institution.website or ''
         }
         for account in current_user.accounts

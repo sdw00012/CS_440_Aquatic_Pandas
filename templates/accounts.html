@@ -75,7 +75,7 @@
                 <td>{{ account.name }}</td>
                 <td>{{ account.type }}</td>
                 <td>{{ account.institution }}</td>
-                <td>-</td>
+                <td>${{ "{:,.2f}".format(account.starting_balance) }}</td>
                 <td>{{ account.website or '-' }}</td>
                 <td>
                     <a href="/accounts/{{ account.id }}/edit">Edit</a> |
