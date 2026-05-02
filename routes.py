@@ -220,6 +220,21 @@ def index():
     total_budget = sum(float(cat.budget) for cat in categories)
     total_spent = sum(float(cat.get_spent_amount()) for cat in categories)
     total_remaining = total_budget - total_spent
+
+    dashboard_categories = []
+    for category in categories:
+        budget_value = float(category.budget)
+        spent_value = float(category.get_spent_amount())
+        remaining_value = budget_value - spent_value
+        percentage = (spent_value / budget_value * 100) if budget_value > 0 else 0
+        dashboard_categories.append({
+            'category_name': category.category_name,
+            'budget': budget_value,
+            'spent_amount': spent_value,
+            'remaining_budget': remaining_value,
+            'percentage': percentage,
+            'is_over_budget': spent_value > budget_value,
+        })
     
     # Get recent transactions (last 10) from all accounts, sorted by date
     all_transactions = []
@@ -247,7 +262,7 @@ def index():
         total_budget=total_budget,
         total_spent=total_spent,
         total_remaining=total_remaining,
-        categories=categories,
+        categories=dashboard_categories,
         recent_transactions=recent_transactions,
         accounts=accounts_with_balance
     )
@@ -338,13 +353,122 @@ def transactions_page():
         all_transactions.extend(account.transactions)
     # Sort by date descending
     all_transactions.sort(key=lambda x: x.date, reverse=True)
-    return render_template('transactions.html', transactions=all_transactions)
+
+    return render_template(
+        'transactions.html',
+        transactions=all_transactions,
+        accounts=current_user.accounts,
+        categories=current_user.categories,
+        user_id=current_user.user_id
+    )
+
+
+@main_bp.route('/transactions/create', methods=['POST'])
+@login_required
+def create_transaction_form():
+    """Create a transaction from the HTML form and redirect back to transactions."""
+    date_value = (request.form.get('date') or '').strip()
+    payee = (request.form.get('payee') or '').strip()
+    memo = (request.form.get('memo') or '').strip()
+    inflow_value = (request.form.get('inflow') or '').strip()
+    outflow_value = (request.form.get('outflow') or '').strip()
+    account_id = request.form.get('account_id')
+    category_id = request.form.get('category_id')
+
+    if not date_value or not payee or not account_id:
+        return redirect(url_for('main.transactions_page'))
+
+    account = Account.query.get(account_id)
+    if not account or account.user_id != current_user.user_id:
+        return redirect(url_for('main.transactions_page'))
+
+    try:
+        transaction_date = datetime.strptime(date_value, '%Y-%m-%d').date()
+        inflow_num = float(inflow_value.replace(',', '')) if inflow_value else 0.0
+        outflow_num = float(outflow_value.replace(',', '')) if outflow_value else 0.0
+        category_id_num = int(category_id) if category_id else None
+
+        if category_id_num:
+            category = Category.query.get(category_id_num)
+            if not category or category.user_id != current_user.user_id:
+                category_id_num = None
+
+        new_transaction = Transaction(
+            date=transaction_date,
+            payee=payee,
+            memo=memo,
+            inflow=inflow_num,
+            outflow=outflow_num,
+            account_id=account.account_id,
+            category_id=category_id_num
+        )
+        db.session.add(new_transaction)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.transactions_page'))
 
 @main_bp.route('/accounts')
 @login_required
 def accounts_page():
     """Display list of user accounts"""
-    return render_template('accounts.html', accounts=current_user.accounts)
+    accounts = [
+        {
+            'id': account.account_id,
+            'name': account.account_name,
+            'type': account.account_type,
+            'institution': account.institution.institution_name,
+            'website': account.institution.website or ''
+        }
+        for account in current_user.accounts
+    ]
+
+    return render_template('accounts.html', accounts=accounts)
+
+
+@main_bp.route('/accounts/create', methods=['POST'])
+@login_required
+def create_account_form():
+    """Create a bank account from the HTML form and redirect back to accounts."""
+    account_name = (request.form.get('name') or '').strip()
+    account_type = (request.form.get('type') or '').strip()
+    institution_name = (request.form.get('institution') or '').strip()
+    website = (request.form.get('website') or '').strip()
+    starting_amount_value = (request.form.get('starting_amount') or '').strip()
+
+    if not account_name or not account_type or not institution_name:
+        return redirect(url_for('main.accounts_page'))
+
+    try:
+        starting_amount = float(starting_amount_value.replace(',', '')) if starting_amount_value else 0.0
+    except ValueError:
+        starting_amount = 0.0
+
+    try:
+        institution = Institution.query.filter_by(institution_name=institution_name).first()
+        if institution:
+            if website:
+                institution.website = website
+        else:
+            institution = Institution(institution_name=institution_name, website=website)
+            db.session.add(institution)
+            db.session.flush()
+
+        new_account = Account(
+            account_name=account_name,
+            account_type=account_type,
+            starting_balance=starting_amount,
+            user_id=current_user.user_id,
+            institution_id=institution.institution_id
+        )
+        db.session.add(new_account)
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.accounts_page'))
 
 @main_bp.route('/profile')
 @login_required

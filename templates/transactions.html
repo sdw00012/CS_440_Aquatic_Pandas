@@ -1,68 +1,129 @@
 {% extends "base.html" %}
 {% block title %}Transactions Page{% endblock %}
 {% block content %}
+    <style>
+        .table-aqua {
+            --bs-table-bg: #f4fbff;
+            --bs-table-striped-bg: #eaf8ff;
+            --bs-table-accent-bg: #eaf8ff;
+        }
+
+        .table-aqua > :not(caption) > * > * {
+            background-color: var(--bs-table-bg);
+        }
+
+        .transactions-table {
+            table-layout: fixed;
+        }
+
+        .transactions-table th,
+        .transactions-table td {
+            vertical-align: middle;
+        }
+
+        .transactions-form-row td {
+            padding-top: 1rem;
+        }
+
+        .transactions-form-row input,
+        .transactions-form-row select {
+            width: 100%;
+        }
+
+        .amount-inflow {
+            color: #198754 !important;
+            font-weight: 600;
+        }
+
+        .amount-outflow {
+            color: #f28c28 !important;
+            font-weight: 600;
+        }
+
+        .transactions-table td.amount-inflow,
+        .transactions-table td.amount-outflow {
+            color: inherit;
+        }
+
+        .transactions-table td.amount-inflow span,
+        .transactions-table td.amount-outflow span {
+            display: inline-block;
+        }
+    </style>
+
     <h1>Transactions</h1>
 
-    <form method="POST" action="/transactions/create" class="mb-2">
-        <div class="row g-1">
-            <div class="col">
-                <input type="date" class="form-control form-control-sm" name="date" required>
-            </div>
-            <div class="col">
-                <select class="form-select form-select-sm" name="account_id" required>
-                    <option value="" disabled selected>Account</option>
-                    {% for account in accounts %}
-                        <option value="{{ account.id }}">{{ account.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col">
-                <input type="text" class="form-control form-control-sm" name="payee" placeholder="Payee" required>
-            </div>
-            <div class="col">
-                <select class="form-select form-select-sm" name="category_id" required>
-                    <option value="" disabled selected>Category</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col">
-                <input type="text" class="form-control form-control-sm" name="memo" placeholder="Memo">
-            </div>
-            <div class="col">
-                <input type="number" step="0.01" class="form-control form-control-sm" name="inflow" placeholder="Inflow">
-            </div>
-            <div class="col">
-                <input type="number" step="0.01" class="form-control form-control-sm" name="outflow" placeholder="Outflow">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary btn-sm">+</button>
-            </div>
-        </div>
-    </form>
+    <form method="POST" action="{{ url_for('main.create_transaction_form') }}" id="transactionCreateForm"></form>
 
-    <table class="table table-bordered table-striped table-primary">
+    <table class="table table-bordered table-striped table-aqua transactions-table">
+        <colgroup>
+            <col style="width: 11%;">
+            <col style="width: 16%;">
+            <col style="width: 16%;">
+            <col style="width: 16%;">
+            <col style="width: 14%;">
+            <col style="width: 11%;">
+            <col style="width: 11%;">
+            <col style="width: 5%;">
+        </colgroup>
         <thead>
-            <th>Date</th>
-            <th>Account</th>
-            <th>Payee</th>
-            <th>Category</th>
-            <th>Memo</th>
-            <th>Inflow</th>
-            <th>Outflow</th>
-            <th>Actions</th>
+            <tr>
+                <th>Date</th>
+                <th>Account</th>
+                <th>Payee</th>
+                <th>Category</th>
+                <th>Memo</th>
+                <th>Inflow</th>
+                <th>Outflow</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
+            <tr class="transactions-form-row">
+                <td>
+                    <input type="date" class="form-control form-control-sm" name="date" form="transactionCreateForm" required>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm" name="account_id" form="transactionCreateForm" required>
+                        <option value="" disabled selected>Account</option>
+                        {% for account in accounts %}
+                            <option value="{{ account.account_id }}">{{ account.account_name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm" name="payee" form="transactionCreateForm" placeholder="Payee" required>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm" name="category_id" form="transactionCreateForm">
+                        <option value="" selected>Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm" name="memo" form="transactionCreateForm" placeholder="Memo">
+                </td>
+                <td>
+                    <input type="text" inputmode="decimal" class="form-control form-control-sm" name="inflow" form="transactionCreateForm" placeholder="Inflow">
+                </td>
+                <td>
+                    <input type="text" inputmode="decimal" class="form-control form-control-sm" name="outflow" form="transactionCreateForm" placeholder="Outflow">
+                </td>
+                <td class="text-center">
+                    <button type="submit" class="btn btn-primary btn-sm" form="transactionCreateForm">+</button>
+                </td>
+            </tr>
             {% for transaction in transactions %}
             <tr>
-                <td>{{ transaction.date }}</td>
-                <td>{{ transaction.account }}</td>
+                <td>{{ transaction.date.strftime('%m/%d/%Y') }}</td>
+                <td>{{ transaction.account.account_name }}</td>
                 <td>{{ transaction.payee }}</td>
-                <td>{{ transaction.category }}</td>
+                <td>{{ transaction.category.category_name if transaction.category else 'Uncategorized' }}</td>
                 <td>{{ transaction.memo }}</td>
-                <td>{{ transaction.inflow }}</td>
-                <td>{{ transaction.outflow }}</td>
+                <td class="amount-inflow"><span>${{ "{:,.2f}".format(transaction.inflow) if transaction.inflow else '0.00' }}</span></td>
+                <td class="amount-outflow"><span>${{ "{:,.2f}".format(transaction.outflow) if transaction.outflow else '0.00' }}</span></td>
                 <td>
                     <a href="/transactions/{{ transaction.id }}/edit">Edit</a> |
                     <a href="/transactions/{{ transaction.id }}/delete">Delete</a>

@@ -125,6 +125,7 @@ class Account(db.Model):
     account_id = db.Column(db.Integer, primary_key=True)
     account_name = db.Column(db.String(255), nullable=False)
     account_type = db.Column(db.String(50), nullable=False)
+    starting_balance = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     user_id = db.Column(db.Integer, db.ForeignKey('User.user_id'), nullable=False)
     institution_id = db.Column(db.Integer, db.ForeignKey('Institution.institution_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -142,6 +143,7 @@ class Account(db.Model):
             'account_id': self.account_id,
             'account_name': self.account_name,
             'account_type': self.account_type,
+            'starting_balance': float(self.starting_balance),
             'user_id': self.user_id,
             'institution_id': self.institution_id,
             'balance': float(self.get_balance()),
@@ -151,10 +153,11 @@ class Account(db.Model):
     
     def get_balance(self):
         """Calculate account balance (sum of inflows - sum of outflows)"""
-        # Sum incoming funds and subtract outgoing funds.
+        # Sum incoming funds and subtract outgoing funds from the starting balance.
+        starting_balance = float(self.starting_balance or 0)
         total_inflow = sum(float(t.inflow) for t in self.transactions)
         total_outflow = sum(float(t.outflow) for t in self.transactions)
-        return total_inflow - total_outflow
+        return starting_balance + total_inflow - total_outflow
     
     def get_transactions(self, start_date=None, end_date=None):
         """Get transactions within date range"""

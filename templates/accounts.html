@@ -1,16 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Accounts Page{% endblock %}
 {% block content %}
+    <style>
+        .table-aqua {
+            --bs-table-bg: #f4fbff;
+            --bs-table-striped-bg: #eaf8ff;
+            --bs-table-accent-bg: #eaf8ff;
+        }
+
+        .table-aqua > :not(caption) > * > * {
+            background-color: var(--bs-table-bg);
+        }
+
+        .accounts-table {
+            table-layout: fixed;
+        }
+
+        .accounts-table th,
+        .accounts-table td {
+            vertical-align: middle;
+        }
+
+        .accounts-form-row input {
+            width: 100%;
+        }
+
+        .accounts-form-row td {
+            padding-top: 1rem;
+        }
+
+        .btn-orange {
+            background-color: #f28c28;
+            border-color: #f28c28;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(242, 140, 40, 0.25);
+        }
+
+        .btn-orange:hover,
+        .btn-orange:focus {
+            background-color: #e57f16;
+            border-color: #e57f16;
+            color: #fff;
+        }
+    </style>
+
     <h1>Bank Accounts</h1>
     
-    <table class="table table-bordered table-striped table-primary">
+    <form id="accountCreateForm" method="POST" action="{{ url_for('main.create_account_form') }}"></form>
+
+    <table class="table table-bordered table-striped table-aqua accounts-table">
+        <colgroup>
+            <col style="width: 30%;">
+            <col style="width: 16%;">
+            <col style="width: 16%;">
+            <col style="width: 16%;">
+            <col style="width: 12%;">
+            <col style="width: 10%;">
+        </colgroup>
 
         <thead>
-            <th>Account Name</th>
-            <th>Type</th>
-            <th>Institution</th>
-            <th>Website</th>
-            <th>Actions</th>
+            <tr>
+                <th>Account Name</th>
+                <th>Type</th>
+                <th>Institution</th>
+                <th>Starting Amount</th>
+                <th>Website</th>
+                <th>Actions</th>
+            </tr>
         </thead>
 
         <tbody>
@@ -19,41 +75,37 @@
                 <td>{{ account.name }}</td>
                 <td>{{ account.type }}</td>
                 <td>{{ account.institution }}</td>
-                <td><a href="{{ account.website }}">{{ account.website }}</a></td>
+                <td>-</td>
+                <td>{{ account.website or '-' }}</td>
                 <td>
                     <a href="/accounts/{{ account.id }}/edit">Edit</a> |
                     <a href="/accounts/{{ account.id }}/delete">Delete</a>
                 </td>
             </tr>
             {% endfor %}
+            <tr class="accounts-form-row">
+                <td>
+                    <input type="text" class="form-control" id="accountName" name="name" form="accountCreateForm" required placeholder="Account Name">
+                </td>
+                <td>
+                    <input type="text" class="form-control" id="accountType" name="type" form="accountCreateForm" required placeholder="Account Type">
+                </td>
+                <td>
+                    <input type="text" class="form-control" id="institution" name="institution" form="accountCreateForm" required placeholder="Institution">
+                </td>
+                <td>
+                    <input type="text" class="form-control" id="startingAmount" name="starting_amount" form="accountCreateForm" placeholder="Starting Amount">
+                </td>
+                <td>
+                    <input type="text" class="form-control" id="website" name="website" form="accountCreateForm" placeholder="website.com">
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-orange w-100" form="accountCreateForm">Add Account</button>
+                </td>
+            </tr>
         </tbody>
 
     </table>
-
-    <form method="POST" action="/accounts/create">
-        <div class="row align-items-end">
-            <div class="col-md-2">
-                <input type="text" class="form-control" id="accountName" name="name" required placeholder="Account Name">
-            </div>
-            <div class="col-md-2">
-                <input type="text" class="form-control" id="accountType" name="type" required placeholder="Account Type">
-            </div>
-            <div class="col-md-2">
-                <input type="text" class="form-control" id="institution" name="institution" placeholder="Institution">
-            </div>
-            <div class="col-md-2">
-                <input type="url" class="form-control" id="website" name="website" placeholder="Website">
-            </div>
-
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Add Account</button>
-            </div>
-        </div>
-    </form>
-
-    <form>
-
-    </form>
 
 
 {% endblock %}

@@ -52,6 +52,7 @@ CREATE TABLE Account (
     account_id INT AUTO_INCREMENT PRIMARY KEY,
     account_name VARCHAR(255) NOT NULL,
     account_type VARCHAR(50) NOT NULL,
+    starting_balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     user_id INT NOT NULL,
     institution_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

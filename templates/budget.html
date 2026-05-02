@@ -1,11 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Budget Page{% endblock %}
 {% block content %}
+    <style>
+        .table-aqua {
+            --bs-table-bg: #f4fbff;
+            --bs-table-striped-bg: #eaf8ff;
+            --bs-table-accent-bg: #eaf8ff;
+        }
+
+        .table-aqua > :not(caption) > * > * {
+            background-color: var(--bs-table-bg);
+        }
+    </style>
+
     <h1>Budget</h1>
 
     <!-- Selection for the month -->
 
-    <table class="table table-bordered table-striped table-primary">
+    <table class="table table-bordered table-striped table-aqua">
         <thead>
             <th>Category</th>
             <th>Budgeted Amount</th>

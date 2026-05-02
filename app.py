@@ -11,6 +11,7 @@ and registers all routes.
 from flask import Flask, render_template
 from dotenv import load_dotenv
 import os
+from sqlalchemy import inspect, text
 from extensions import db, login_manager
 from flask_login import current_user
 
@@ -69,6 +70,17 @@ def create_app():
 
         # Create any missing tables from the ORM models.
         db.create_all()
+
+        # Bring an existing database up to date when new columns are added.
+        account_columns = {column['name'] for column in inspect(db.engine).get_columns('Account')}
+        if 'starting_balance' not in account_columns:
+            db.session.execute(
+                text(
+                    'ALTER TABLE Account '
+                    'ADD COLUMN starting_balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00 AFTER account_type'
+                )
+            )
+            db.session.commit()
 
         # Tell Flask-Login how to convert stored user_id -> User object.
         @login_manager.user_loader

@@ -167,26 +167,26 @@
         <div class="col-md-3">
             <div class="stat-card balance">
                 <h5>Total Account Balance</h5>
-                <div class="amount">${{ "%.2f"|format(total_balance) }}</div>
+                <div class="amount">${{ "{:,.2f}".format(total_balance) }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card budget">
                 <h5>Total Budget</h5>
-                <div class="amount">${{ "%.2f"|format(total_budget) }}</div>
+                <div class="amount">${{ "{:,.2f}".format(total_budget) }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card spent">
                 <h5>Total Spent</h5>
-                <div class="amount">${{ "%.2f"|format(total_spent) }}</div>
+                <div class="amount">${{ "{:,.2f}".format(total_spent) }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card remaining">
                 <h5>Total Remaining</h5>
                 <div class="amount" style="{% if total_remaining < 0 %}color: #fff;{% endif %}">
-                    ${{ "%.2f"|format(total_remaining) }}
+                    ${{ "{:,.2f}".format(total_remaining) }}
                 </div>
             </div>
         </div>
@@ -202,12 +202,12 @@
                         <div class="category-progress">
                             <div class="category-name">
                                 <span>{{ category.category_name }}</span>
-                                <span>${{ "{:,.2f}".format(category.get_spent_amount()) }} / ${{ "{:,.2f}".format(category.budget) }}</span>
+                                <span>${{ "{:,.2f}".format(category.spent_amount) }} / ${{ "{:,.2f}".format(category.budget) }}</span>
                             </div>
-                            {% set spent = category.get_spent_amount() %}
+                            {% set spent = category.spent_amount %}
                             {% set budget = category.budget %}
-                            {% set percentage = (spent / budget * 100) if budget > 0 else 0 %}
-                            {% set is_over = spent > budget %}
+                            {% set percentage = category.percentage %}
+                            {% set is_over = category.is_over_budget %}
                             <div class="progress">
                                 <div class="progress-bar {% if is_over %}over-budget{% elif percentage > 75 %}bg-warning{% elif percentage > 50 %}bg-info{% else %}bg-success{% endif %}" 
                                      role="progressbar" 
