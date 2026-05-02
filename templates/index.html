@@ -133,6 +133,30 @@
     .action-buttons .btn {
         margin-right: 10px;
     }
+
+    .summary-table {
+        width: 100%;
+        font-size: 14px;
+        border-collapse: collapse;
+    }
+
+    .summary-table tr {
+        border-bottom: 1px solid #ddd;
+    }
+
+    .summary-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .summary-table td {
+        padding: 10px 0;
+        vertical-align: middle;
+    }
+
+    .summary-table td:last-child {
+        text-align: right;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container-fluid" style="padding: 30px 20px;">
@@ -178,7 +202,7 @@
                         <div class="category-progress">
                             <div class="category-name">
                                 <span>{{ category.category_name }}</span>
-                                <span>${{ "%.2f"|format(category.get_spent_amount()) }} / ${{ "%.2f"|format(category.budget) }}</span>
+                                <span>${{ "{:,.2f}".format(category.get_spent_amount()) }} / ${{ "{:,.2f}".format(category.budget) }}</span>
                             </div>
                             {% set spent = category.get_spent_amount() %}
                             {% set budget = category.budget %}
@@ -200,18 +224,18 @@
                 <div class="col-md-4">
                     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
                         <h5 style="margin-bottom: 15px; font-weight: 700;">Budget Summary</h5>
-                        <table style="width: 100%; font-size: 14px;">
-                            <tr style="margin-bottom: 8px; display: block;">
+                        <table class="summary-table">
+                            <tr>
                                 <td style="font-weight: 600;">Total Budgeted:</td>
-                                <td style="float: right; color: #667eea;">${{ "%.2f"|format(total_budget) }}</td>
+                                <td style="color: #667eea;">${{ "{:,.2f}".format(total_budget) }}</td>
                             </tr>
-                            <tr style="margin-bottom: 8px; display: block;">
+                            <tr>
                                 <td style="font-weight: 600;">Total Spent:</td>
-                                <td style="float: right; color: #4facfe;">${{ "%.2f"|format(total_spent) }}</td>
+                                <td style="color: #4facfe;">${{ "{:,.2f}".format(total_spent) }}</td>
                             </tr>
-                            <tr style="margin-bottom: 8px; display: block; padding-top: 10px; border-top: 1px solid #ddd;">
+                            <tr>
                                 <td style="font-weight: 600;">Remaining:</td>
-                                <td style="float: right; color: #43e97b; font-weight: bold;">${{ "%.2f"|format(total_remaining) }}</td>
+                                <td style="color: #43e97b; font-weight: bold;">${{ "{:,.2f}".format(total_remaining) }}</td>
                             </tr>
                         </table>
                     </div>

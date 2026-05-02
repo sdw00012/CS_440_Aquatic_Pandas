@@ -256,7 +256,77 @@ def index():
 @login_required
 def budget_page():
     """Display budget categories and spending"""
-    return render_template('budget.html', categories=current_user.categories)
+    # Load categories for the current user and compute totals used by the template
+    categories = current_user.categories
+    total_budgeted = sum(float(cat.budget) for cat in categories)
+    total_spent = sum(float(cat.get_spent_amount()) for cat in categories)
+    total_remaining = total_budgeted - total_spent
+
+    return render_template(
+        'budget.html',
+        categories=categories,
+        user_id=current_user.user_id,
+        total_budgeted=total_budgeted,
+        total_spent=total_spent,
+        total_remaining=total_remaining
+    )
+
+
+@main_bp.route('/users/<int:user_id>/categories', methods=['POST'])
+@login_required
+def create_category_form(user_id):
+    """Create a new Category from the HTML form and redirect back to budget."""
+    # Authorization: users may only create categories for themselves
+    if current_user.user_id != user_id:
+        return jsonify({'status': 'error', 'message': 'Cannot create category for this user'}), 403
+
+    # Read and normalize form values
+    name = (request.form.get('name') or '').strip()
+    budget_val = (request.form.get('budgeted_amount') or '').strip()
+
+    if not name:
+        return redirect(url_for('main.budget_page'))
+
+    try:
+        budget_num = float(budget_val.replace(',', '')) if budget_val else 0.0
+    except ValueError:
+        budget_num = 0.0
+
+    # Create or update Category for this user
+    try:
+        existing_category = Category.query.filter_by(category_name=name, user_id=user_id).first()
+
+        if existing_category:
+            existing_category.budget = budget_num
+        else:
+            new_category = Category(category_name=name, budget=budget_num, user_id=user_id)
+            db.session.add(new_category)
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.budget_page'))
+
+
+@main_bp.route('/categories/<int:category_id>/delete', methods=['GET'])
+@login_required
+def delete_category_page(category_id):
+    """Delete a category from the HTML budget page and redirect back."""
+    category = Category.query.get(category_id)
+    if not category:
+        return redirect(url_for('main.budget_page'))
+
+    if current_user.user_id != category.user_id:
+        return redirect(url_for('main.budget_page'))
+
+    try:
+        db.session.delete(category)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.budget_page'))
 
 @main_bp.route('/transactions')
 @login_required
@@ -281,6 +351,32 @@ def accounts_page():
 def profile_page():
     """Display and manage user profile"""
     return render_template('profile.html', user=current_user)
+
+
+# Convenience routes: expose common auth pages at top-level paths
+# so templates or external links that point to `/login` or `/register`
+# work without requiring the `/auth` prefix.
+@main_bp.route('/login', methods=['GET'])
+def login_view():
+    """Redirect to the auth blueprint login handler (serves login page)."""
+    return redirect(url_for('auth.login'))
+
+
+@main_bp.route('/register', methods=['GET'])
+def register_view():
+    """Redirect to the auth blueprint register handler (serves register page)."""
+    return redirect(url_for('auth.register'))
+
+
+@main_bp.route('/logout', methods=['GET'])
+@login_required
+def logout_view():
+    """Convenience GET logout which ends the session and redirects to login.
+
+    Note: the API logout endpoint remains POST /auth/logout for scripted calls.
+    """
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 
 # ==============================================================================
