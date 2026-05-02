@@ -125,8 +125,8 @@
                 <td class="amount-inflow"><span>${{ "{:,.2f}".format(transaction.inflow) if transaction.inflow else '0.00' }}</span></td>
                 <td class="amount-outflow"><span>${{ "{:,.2f}".format(transaction.outflow) if transaction.outflow else '0.00' }}</span></td>
                 <td>
-                    <a href="/transactions/{{ transaction.id }}/edit">Edit</a> |
-                    <a href="/transactions/{{ transaction.id }}/delete">Delete</a>
+                    <a href="{{ url_for('main.edit_transaction_page', transaction_id=transaction.transaction_id) }}">Edit</a> |
+                    <a href="{{ url_for('main.delete_transaction_page', transaction_id=transaction.transaction_id) }}">Delete</a>
                 </td>
             </tr>
             {% endfor %}

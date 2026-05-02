@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Edit Account{% endblock %}
+{% block content %}
+<style>
+    .edit-card {
+        max-width: 760px;
+        background: #f4fbff;
+        border: 1px solid #d7eaf5;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .edit-card label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .btn-orange {
+        background-color: #f28c28;
+        border-color: #f28c28;
+        color: #fff;
+    }
+
+    .btn-orange:hover,
+    .btn-orange:focus {
+        background-color: #e57f16;
+        border-color: #e57f16;
+        color: #fff;
+    }
+</style>
+
+<h1>Edit Account</h1>
+
+<div class="edit-card">
+    <form method="POST" action="{{ url_for('main.edit_account_page', account_id=account.account_id) }}">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="name">Account Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ account.account_name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="type">Account Type</label>
+                <input type="text" class="form-control" id="type" name="type" value="{{ account.account_type }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="institution">Institution</label>
+                <input type="text" class="form-control" id="institution" name="institution" value="{{ account.institution.institution_name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="website">Website</label>
+                <input type="text" class="form-control" id="website" name="website" value="{{ account.institution.website or '' }}" placeholder="website.com">
+            </div>
+            <div class="col-md-6">
+                <label for="starting_amount">Starting Amount</label>
+                <input type="text" class="form-control" id="starting_amount" name="starting_amount" value="{{ '{:,.2f}'.format(account.starting_balance) }}" placeholder="Starting Amount">
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-orange">Save Changes</button>
+            <a href="{{ url_for('main.accounts_page') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

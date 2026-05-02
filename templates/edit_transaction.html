@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Edit Transaction{% endblock %}
+{% block content %}
+<style>
+    .edit-card {
+        max-width: 900px;
+        background: #f4fbff;
+        border: 1px solid #d7eaf5;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .edit-card label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .btn-orange {
+        background-color: #f28c28;
+        border-color: #f28c28;
+        color: #fff;
+    }
+
+    .btn-orange:hover,
+    .btn-orange:focus {
+        background-color: #e57f16;
+        border-color: #e57f16;
+        color: #fff;
+    }
+</style>
+
+<h1>Edit Transaction</h1>
+
+<div class="edit-card">
+    <form method="POST" action="{{ url_for('main.edit_transaction_page', transaction_id=transaction.transaction_id) }}">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="date">Date</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ transaction.date.strftime('%Y-%m-%d') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="account_id">Account</label>
+                <select class="form-select" id="account_id" name="account_id" required>
+                    {% for account in accounts %}
+                        <option value="{{ account.account_id }}" {% if account.account_id == transaction.account_id %}selected{% endif %}>{{ account.account_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="category_id">Category</label>
+                <select class="form-select" id="category_id" name="category_id">
+                    <option value="">Uncategorized</option>
+                    {% for category in categories %}
+                        <option value="{{ category.category_id }}" {% if transaction.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="payee">Payee</label>
+                <input type="text" class="form-control" id="payee" name="payee" value="{{ transaction.payee }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="memo">Memo</label>
+                <input type="text" class="form-control" id="memo" name="memo" value="{{ transaction.memo or '' }}">
+            </div>
+            <div class="col-md-2">
+                <label for="inflow">Inflow</label>
+                <input type="text" class="form-control" id="inflow" name="inflow" value="{{ '{:,.2f}'.format(transaction.inflow) }}">
+            </div>
+            <div class="col-md-2">
+                <label for="outflow">Outflow</label>
+                <input type="text" class="form-control" id="outflow" name="outflow" value="{{ '{:,.2f}'.format(transaction.outflow) }}">
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-orange">Save Changes</button>
+            <a href="{{ url_for('main.transactions_page') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

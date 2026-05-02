@@ -409,6 +409,77 @@ def create_transaction_form():
 
     return redirect(url_for('main.transactions_page'))
 
+
+@main_bp.route('/transactions/<int:transaction_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_transaction_page(transaction_id):
+    """Edit a transaction from a simple HTML form."""
+    transaction = Transaction.query.get(transaction_id)
+    if not transaction or transaction.account.user_id != current_user.user_id:
+        return redirect(url_for('main.transactions_page'))
+
+    if request.method == 'GET':
+        accounts = current_user.accounts
+        categories = current_user.categories
+        return render_template(
+            'edit_transaction.html',
+            transaction=transaction,
+            accounts=accounts,
+            categories=categories
+        )
+
+    date_value = (request.form.get('date') or '').strip()
+    payee = (request.form.get('payee') or '').strip()
+    memo = (request.form.get('memo') or '').strip()
+    inflow_value = (request.form.get('inflow') or '').strip()
+    outflow_value = (request.form.get('outflow') or '').strip()
+    account_id = request.form.get('account_id')
+    category_id = request.form.get('category_id')
+
+    if not date_value or not payee or not account_id:
+        return redirect(url_for('main.edit_transaction_page', transaction_id=transaction_id))
+
+    selected_account = Account.query.get(account_id)
+    if not selected_account or selected_account.user_id != current_user.user_id:
+        return redirect(url_for('main.edit_transaction_page', transaction_id=transaction_id))
+
+    try:
+        transaction.date = datetime.strptime(date_value, '%Y-%m-%d').date()
+        transaction.payee = payee
+        transaction.memo = memo
+        transaction.inflow = float(inflow_value.replace(',', '')) if inflow_value else 0.0
+        transaction.outflow = float(outflow_value.replace(',', '')) if outflow_value else 0.0
+        transaction.account_id = selected_account.account_id
+
+        if category_id:
+            category = Category.query.get(category_id)
+            transaction.category_id = category.category_id if category and category.user_id == current_user.user_id else None
+        else:
+            transaction.category_id = None
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.transactions_page'))
+
+
+@main_bp.route('/transactions/<int:transaction_id>/delete', methods=['GET'])
+@login_required
+def delete_transaction_page(transaction_id):
+    """Delete a transaction from the HTML page and redirect back to transactions."""
+    transaction = Transaction.query.get(transaction_id)
+    if not transaction or transaction.account.user_id != current_user.user_id:
+        return redirect(url_for('main.transactions_page'))
+
+    try:
+        db.session.delete(transaction)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.transactions_page'))
+
 @main_bp.route('/accounts')
 @login_required
 def accounts_page():
@@ -465,6 +536,70 @@ def create_account_form():
         )
         db.session.add(new_account)
 
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.accounts_page'))
+
+
+@main_bp.route('/accounts/<int:account_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_account_page(account_id):
+    """Edit an account's details from a simple HTML form."""
+    account = Account.query.get(account_id)
+    if not account or account.user_id != current_user.user_id:
+        return redirect(url_for('main.accounts_page'))
+
+    if request.method == 'GET':
+        return render_template('edit_account.html', account=account)
+
+    account_name = (request.form.get('name') or '').strip()
+    account_type = (request.form.get('type') or '').strip()
+    institution_name = (request.form.get('institution') or '').strip()
+    website = (request.form.get('website') or '').strip()
+    starting_amount_value = (request.form.get('starting_amount') or '').strip()
+
+    if not account_name or not account_type or not institution_name:
+        return redirect(url_for('main.edit_account_page', account_id=account_id))
+
+    try:
+        starting_balance = float(starting_amount_value.replace(',', '')) if starting_amount_value else 0.0
+    except ValueError:
+        starting_balance = 0.0
+
+    try:
+        institution = Institution.query.filter_by(institution_name=institution_name).first()
+        if institution:
+            if website:
+                institution.website = website
+        else:
+            institution = Institution(institution_name=institution_name, website=website)
+            db.session.add(institution)
+            db.session.flush()
+
+        account.account_name = account_name
+        account.account_type = account_type
+        account.starting_balance = starting_balance
+        account.institution_id = institution.institution_id
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for('main.accounts_page'))
+
+
+@main_bp.route('/accounts/<int:account_id>/delete', methods=['GET'])
+@login_required
+def delete_account_page(account_id):
+    """Delete an account from the HTML page and redirect back to accounts."""
+    account = Account.query.get(account_id)
+    if not account or account.user_id != current_user.user_id:
+        return redirect(url_for('main.accounts_page'))
+
+    try:
+        db.session.delete(account)
         db.session.commit()
     except Exception:
         db.session.rollback()

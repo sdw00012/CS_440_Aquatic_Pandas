@@ -1,1 +1,26 @@
+/* Site custom styles */
+
+/* Prevent page content from being hidden behind the fixed top navbar */
+body {
+	padding-top: 70px; /* adjust if your navbar height is different */
+	padding-bottom: 70px; /* reserve space for fixed footer */
+}
+
+/* Ensure fixed navbar stays above other content */
+.navbar.fixed-top {
+	z-index: 1030;
+}
+
+/* Small visual tweaks for brand image alignment */
+.navbar .navbar-brand img {
+	vertical-align: middle;
+}
+
+/* Keep footer visible and not overlap content */
+footer.fixed-bottom {
+	z-index: 1020;
+}
+
+/* Minor spacing for main container when using fixed navbar */
+.container { margin-top: 0; }
 
