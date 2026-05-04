@@ -343,8 +343,26 @@ def delete_category_page(category_id):
 
     return redirect(url_for('main.budget_page'))
 
+@main_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        current_user.first_name = request.form.get('first_name', current_user.first_name)
+        current_user.last_name = request.form.get('last_name', current_user.last_name)
+        current_user.phone = request.form.get('phone', current_user.phone)
+        current_user.address = request.form.get('address', current_user.address)
+        new_email = request.form.get('email', '').strip()
+        if new_email and new_email != current_user.email:
+            existing = User.query.filter_by(email=new_email).first()
+            if not existing:
+                current_user.email = new_email
+        db.session.commit()
+        return redirect(url_for('main.profile'))
+    return render_template('profile.html', user=current_user)
+
 @main_bp.route('/transactions')
 @login_required
+
 def transactions_page():
     """Display all transactions for the current user"""
     # Gather transactions from all of the user's accounts
@@ -606,11 +624,7 @@ def delete_account_page(account_id):
 
     return redirect(url_for('main.accounts_page'))
 
-@main_bp.route('/profile')
-@login_required
-def profile_page():
-    """Display and manage user profile"""
-    return render_template('profile.html', user=current_user)
+
 
 
 # Convenience routes: expose common auth pages at top-level paths
